@@ -99,7 +99,7 @@ export default function AdminDashboard() {
   const statsData = [
     {
       title: 'Total Revenue',
-      value: `$${(typeof stats.totalRevenue === 'number' ? stats.totalRevenue : 0).toFixed(2)}`,
+      value: `₹${(typeof stats.totalRevenue === 'number' ? stats.totalRevenue : 0).toFixed(2)}`,
       change: 'Live data',
       changeType: 'neutral',
       icon: IndianRupee,
