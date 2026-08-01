@@ -40,7 +40,7 @@ export default function Footer() {
 
         <div className="border-t border-gray-700 mt-8 pt-8 text-center">
           <p className="text-gray-400">
-            © 2026 Prime Computers. All rights reserved.
+            © Since 2017 Prime Computer & Network. All rights reserved.
           </p>
         </div>
       </div>

@@ -219,7 +219,7 @@ export default function Checkout() {
           console.log('nonce :: ' +num); // Example: 4820519374
               const   nonce  = num;
      let isRazorPayOrderReady = false; 
-      // CREATE A Razor Pay Order at Prime Computers DATABASE
+      // CREATE A Razor Pay Order at Prime Computer & Network DATABASE
       
       let payload = { }
       if(cart !==undefined && Array.isArray(cart) && cart.length >0){
@@ -326,7 +326,7 @@ export default function Checkout() {
           console.log('nonce :: ' +num); // Example: 4820519374
               const   nonce  = num;
      let isPayPalOrderReady = false; 
-      // CREATE A Razor Pay Order at Prime Computers DATABASE
+      // CREATE A Razor Pay Order at Prime Computer & Network DATABASE
       
       let payload = { }
       if(cart !==undefined && Array.isArray(cart) && cart.length >0){

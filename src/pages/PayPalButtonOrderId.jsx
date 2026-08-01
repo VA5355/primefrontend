@@ -79,7 +79,7 @@ const PayPalButtonOrderId = ({ handlePayPalOrderAndButton ,  totalAmount = "3239
                             });
                 }
                 else {
-                      toast.success('Pay Pal Order processing , Prime Computers Order not available ');
+                      toast.success('Pay Pal Order processing , Prime Computer & Network Order not available ');
                       let totalAmtTwoDec  =  parseFloat(totalAmount).toFixed(2)
                      return actions.order.create({
                             purchase_units: [

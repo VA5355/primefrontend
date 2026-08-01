@@ -184,7 +184,7 @@ export function ShopHubLogoWithTextOld({ className = "", size = "default" }) {
       <ShopHubLogo className={`${currentSize.logo} logo transition-transform group-hover:rotate-12`} />
       <div className="flex flex-col">
         <span className={`${currentSize.text} font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 dark:from-violet-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent transition-all group-hover:scale-105`}>
-          Prime Computers
+          Prime Computer & Network
         </span>
         <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1">
           Your Shopping Paradise

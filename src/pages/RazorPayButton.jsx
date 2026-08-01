@@ -331,7 +331,7 @@ const RazorPayButton = ({amount = "2499.00", currency="INR " ,receipt ,descripti
               */
                 // 1. Destructure the order ID (renamed to receipt) and products array
               const { 
-                id: receipt = 'Sale order issued Prime Computers', 
+                id: receipt = 'Sale order issued Prime Computer & Network', 
                 products = [] 
               } = order || {};
 
@@ -341,7 +341,7 @@ const RazorPayButton = ({amount = "2499.00", currency="INR " ,receipt ,descripti
                     .map(product => product?.description?.trim())
                     .filter(Boolean) // Remove empty/null descriptions
                     .join(' | ')     // Join with separator (e.g., "Single origin arabica beans. | ...")
-                : 'Set of products sales Prime Computers';
+                : 'Set of products sales Prime Computer & Network';
 
               console.log({ receipt, razdescription });
 
