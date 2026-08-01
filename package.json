@@ -36,7 +36,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "clean:redux-js": "find src -mindepth 2 -type f -name \"*.js\" ! -path \"src/lib/*\" ! -path \"src/context/*\" ! -path \"src/hooks/*\" -delete",
+    "clean:redux-js": "find src -mindepth 2 -type f -name \"*.js\" ! -path \"src/lib/*\" ! -path \"src/context/*\" ! -path \"src/hooks/*\" ! -path \"src/redux/*\" -delete",
     "pre-build": "tsc",
     "build": "npm run clean:redux-js && npm run pre-build && react-scripts build",
     "test": "react-scripts test",
