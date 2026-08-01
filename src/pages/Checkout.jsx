@@ -15,7 +15,30 @@ import PageHeader from '../components/layout/PageHeader';
 import Button from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
 import { formatCurrency } from '../lib/utils';
+import { REACT_APP_RAZORORDERANDPAYMENTURL } from '../libs/client';
 import usePageTitle from '../hooks/usePageTitle';
+import {ReduxProvider} from '../providers/ReduxProvider'
+import { ModalProvider } from '../providers/ModalProvider';
+import RazorPayButton from './RazorPayButton';
+import PaymentContainer from './PaymentContainer';
+import PayPalButton from './PayPalButton';
+import PayPalButtonOrderId from './PayPalButtonOrderId';
+import PayPalButtonOrderIdSingle from './PayPalButtonOrderIdSingle';
+
+
+ function     getTimeSeriesFormattedTimeKey()  {
+  const now = new Date();
+  const year = now.getFullYear().toString().padStart(2, '0');
+  const month = now.getMonth().toString().padStart(2, '0');
+  const day = now.getDay().toString().padStart(2, '0');
+  const hour = now.getHours().toString().padStart(2, '0');
+  let min5 = now.getMinutes() ;
+       min5 = min5  - 5;
+  const min = min5.toString().padStart(2, '0');
+  const sec = now.getSeconds().toString().padStart(2, '0');
+  const ms = now.getMilliseconds().toString().padStart(3, '0');
+  return `${year}-${month}-${day} ${hour}:${min}:${sec}`;
+}
 
 export default function Checkout() {
   usePageTitle('Checkout');
@@ -27,7 +50,11 @@ export default function Checkout() {
   const [clientToken, setClientToken] = useState('');
   const [instance, setInstance] = useState(null);
   const [loading, setLoading] = useState(false);
-  
+   /** Razor Payment functions  */
+      const [gpayamount, setGpayAmount] = useState(0);
+        const [gpayOrderId, setGpayOrderId] = useState(null);
+         const [gpayCustomer, setGpayCustomer] = useState(null); 
+         const [isTrialGooglePayOpen, setIsTrialGooglePayOpen] = useState(false);
   // Form states
   const [deliveryInfo, setDeliveryInfo] = useState({
     fullName: auth?.user?.name || '',
@@ -51,7 +78,14 @@ export default function Checkout() {
 
   const getClientToken = async () => {
     try {
-      const { data } = await axios.get(`/braintree/getToken`);
+       const baseUrl =
+             ( window.location.hostname === `${process.env.REACT_APP_NGROKLOCALHOST}` ||   window.location.hostname === 'localhost')
+               ?  `${process.env.REACT_APP_RAZORORDERANDPAYMENTURL_LOCAL}`
+                : `${process.env.REACT_APP_RAZORORDERANDPAYMENTURL}`;
+      console.log('window.location.hostname '+window.location.hostname)
+      console.log('REACT_APP_NGROKLOCALHOST '+process.env.REACT_APP_NGROKLOCALHOST)
+      console.log('baseUrl '+baseUrl)
+      const { data } = await axios.get(`${baseUrl}/api/braintree/getToken`);
       setClientToken(data.clientToken);
     } catch (err) {
       console.error(err);
@@ -67,7 +101,67 @@ export default function Checkout() {
     const subtotal = calculateSubtotal();
     return subtotal > 100 ? 0 : 10;
   };
+  const getShortDateTime  = () => {
+    const now = new Date();
+    const shortIST = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'short' });
+      console.log("shortIST "+shortIST); 
+    /*
+    const shortDateTime = now.toLocaleString('en-IN', { 
+      dateStyle: 'short', 
+      timeStyle: 'short' 
+    });
+    console.log(shortDateTime); */
+     return shortIST;
+  }
+  const getShortDayWithSeconds = () => {
+    /*
+        const options = { 
+      weekday: 'short',    // "Mon", "Tue", etc.
+      timeZone: 'Asia/Kolkata', 
+      hour12: false,       // Use true for 12-hour AM/PM format
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit' 
+    };
 
+    const formatter = new Intl.DateTimeFormat('en-IN', options);
+     */
+        const options = { 
+      timeZone: 'Asia/Kolkata',
+      weekday: 'short', 
+      day: 'numeric', 
+      month: 'short', 
+      year: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit',
+      hour12: false // Set to true for AM/PM format
+    };
+
+    const istDateTime = new Date().toLocaleString('en-IN', options);
+    console.log(istDateTime); 
+    // Output example: "Wed, 22 Jul 2026, 10:02:15"
+    let formatNoSpaceComa = istDateTime.replace(", ","_").replace(" ","_").trim();
+    console.log("ShortDayWithSeconds :: " + formatNoSpaceComa); 
+    return formatNoSpaceComa;
+
+  }
+  const getDeliveryToUserDetails = () => {
+        const required = ['fullName', 'email', 'phone', 'address', 'city', 'postalCode'];
+     let deliveryUser = "";   
+    for (const field of required) {
+
+      if (!deliveryInfo[field]?.trim()) {
+       // toast.error(`Please fill in ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
+
+         deliveryUser = deliveryUser + " "+field+" : NA"
+      }
+      else {
+           deliveryUser = deliveryUser +  " "+field+ " : " + deliveryInfo[field]?.trim()
+      }
+    }
+     return deliveryUser;
+  }
   const calculateTax = () => {
     const subtotal = calculateSubtotal();
     return subtotal * 0.08; // 8% tax
@@ -108,14 +202,234 @@ export default function Checkout() {
     return true;
   };
 
+  const handleRazorPayOrderAndButton = async () => {
+    if (!validateForm())
+      {
+  console.log("handleRazorPayORderandButton :: validating RazorPayOrder Checkout Form failed  ")
+        return;
+      } 
+
+    try {
+      setLoading(true);
+      let description = "Cart initiated at "+getShortDateTime() +" by "+getDeliveryToUserDetails() ;
+      //   const { nonce } =  await Promise.resolve(description)  // this does not set the nounce
+         //  const   nonce  =   (descriptionAct)    /// descriptive does not work lets try some one time numeric number 
+        const num = Math.floor(1000000000 + Math.random() * 9000000000); // cannot start with 0 
+       // const num = Array.from({length: 10}, () => Math.floor(Math.random() * 10)).join('');
+          console.log('nonce :: ' +num); // Example: 4820519374
+              const   nonce  = num;
+     let isRazorPayOrderReady = false; 
+      // CREATE A Razor Pay Order at Prime Computers DATABASE
+      
+      let payload = { }
+      if(cart !==undefined && Array.isArray(cart) && cart.length >0){
+         if(deliveryInfo !== undefined){
+             payload.name = "razorPayOrder_"+deliveryInfo.email+"_"+getShortDayWithSeconds();
+             payload.deliveryInfo = deliveryInfo;
+             payload.cart = cart;
+         }
+            
+      } 
+      // await axios.post(`/category/create`, { name: name.trim() });
+        try {
+            const baseUrl =
+              ( window.location.hostname === `${process.env.REACT_APP_NGROKLOCALHOST}` ||   window.location.hostname === 'localhost')
+                ?  `${process.env.REACT_APP_RAZORORDERANDPAYMENTURL_LOCAL}`
+                : `${process.env.REACT_APP_RAZORORDERANDPAYMENTURL}`;
+                  // https://onedinaar.com
+            // `${baseUrl}/api/razorpayorder/create`,
+            /**
+               {
+                params: payload,
+                withCredentials: true,
+              }
+             */
+            console.log("handleRazorPayORderandButton :: sending RazorPayOrder to  "+JSON.stringify(axios.baseUrl))
+            console.log("handleRazorPayORderandButton :: payload ::  "+JSON.stringify(payload))
+              // 1. Helper function that polls localStorage every 200ms up to maxTimeout (5000ms)
+                const waitForLocalStorageKey = (keyName, maxTimeoutMs = 5000, checkIntervalMs = 200) => {
+                  return new Promise((resolve) => {
+                    const startTime = Date.now();
+
+                    const interval = setInterval(() => {
+                      const value = localStorage.getItem(keyName);
+
+                      // If the key is set (and not empty)
+                      if (value !== null && value !== undefined && value !== "") {
+                        clearInterval(interval);
+                        resolve(value);
+                      } 
+                      // If timeout reached (5 seconds elapsed)
+                      else if (Date.now() - startTime >= maxTimeoutMs) {
+                        clearInterval(interval);
+                        resolve(null); // Resolves null if key was not set in time
+                      }
+                    }, checkIntervalMs);
+                  });
+                };
+
+                // 2. Wait for the key to be set in localStorage
+                const razorpayorderstatus = await waitForLocalStorageKey("razorpayorderstatus", 5000);
+
+                // 3. Perform navigation and actions based on the status retrieved
+                if (!razorpayorderstatus || razorpayorderstatus !== "success") {
+                  toast.error('Order placement had ISSUES, Please Try again!');
+                  navigate('/cart');
+                } else {
+                  console.log("handleRazorPayORderandButton :: status :: " + razorpayorderstatus);
+                  /* avoid this till the Razor payment flow is completed 
+                  localStorage.removeItem('cart');
+                  localStorage.removeItem('razorpayorderstatus'); // Clean up status key
+                  setCart([]);
+                  toast.success('Order placed successfully!');
+                  navigate('/dashboard/user/orders');
+                  */
+                }
+
+
+          } catch (err ) {
+           //  return rejectWithValue(err.response?.data || "Order failed");
+             console.error("Razor Pay Order "+err.response?.data || "Order failed");
+               toast.error('Razor Pay Order creation failed. Please try again.');
+          }
+     // const { nonce } = await instance.requestPaymentMethod();
+      
+   /* THis STEP stried in Razor Pay Button 
+       await axios.post(`/braintree/payment`, {
+        nonce,
+        cart,
+        deliveryInfo
+      });
+          */
+    
+    } catch (err) {
+      console.error(err);
+      toast.error('Payment failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+ const handlePayPalOrderAndButton = async () => {
+    if (!validateForm())
+      {
+  console.log("handlePayPalOrderAndButton :: validating PayPalOrder Checkout Form failed  ")
+        return;
+      } 
+
+    try {
+      setLoading(true);
+      let description = "Cart initiated at "+getShortDateTime() +" by "+getDeliveryToUserDetails() ;
+      //   const { nonce } =  await Promise.resolve(description)  // this does not set the nounce
+         //  const   nonce  =   (descriptionAct)    /// descriptive does not work lets try some one time numeric number 
+        const num = Math.floor(1000000000 + Math.random() * 9000000000); // cannot start with 0 
+       // const num = Array.from({length: 10}, () => Math.floor(Math.random() * 10)).join('');
+          console.log('nonce :: ' +num); // Example: 4820519374
+              const   nonce  = num;
+     let isPayPalOrderReady = false; 
+      // CREATE A Razor Pay Order at Prime Computers DATABASE
+      
+      let payload = { }
+      if(cart !==undefined && Array.isArray(cart) && cart.length >0){
+         if(deliveryInfo !== undefined){
+             payload.name = "payPalOrder_"+deliveryInfo.email+"_"+getShortDayWithSeconds();
+             payload.deliveryInfo = deliveryInfo;
+             payload.cart = cart;
+         }
+         localStorage.setItem('paypalOrder',payload);
+         // this is set so that the PayPalButtonOrderId can read the payPalOrder generated above 
+
+      } 
+      // await axios.post(`/category/create`, { name: name.trim() });
+        try {
+            const baseUrl =
+              ( window.location.hostname === `${process.env.REACT_APP_NGROKLOCALHOST}` ||   window.location.hostname === 'localhost')
+                ?  `${process.env.REACT_APP_PAYPALORDERANDPAYMENTURL_LOCAL}`
+                : `${process.env.REACT_APP_PAYPALORDERANDPAYMENTURL}`;
+                  // https://onedinaar.com
+            // `${baseUrl}/api/razorpayorder/create`,
+            /**
+               {
+                params: payload,
+                withCredentials: true,
+              }
+             */
+            console.log("handlePayPalORderandButton :: sending handlePayPalOrder to  "+JSON.stringify(axios.baseUrl))
+            console.log("handlePayPalORderandButton :: payload ::  "+JSON.stringify(payload))
+              // 1. Helper function that polls localStorage every 200ms up to maxTimeout (5000ms)
+                const waitForLocalStorageKey = (keyName, maxTimeoutMs = 5000, checkIntervalMs = 200) => {
+                  return new Promise((resolve) => {
+                    const startTime = Date.now();
+
+                    const interval = setInterval(() => {
+                      const value = localStorage.getItem(keyName);
+
+                      // If the key is set (and not empty)
+                      if (value !== null && value !== undefined && value !== "") {
+                        clearInterval(interval);
+                        resolve(value);
+                      } 
+                      // If timeout reached (5 seconds elapsed)
+                      else if (Date.now() - startTime >= maxTimeoutMs) {
+                        clearInterval(interval);
+                        resolve(null); // Resolves null if key was not set in time
+                      }
+                    }, checkIntervalMs);
+                  });
+                };
+
+                // 2. Wait for the key to be set in localStorage
+                const paypalorderstatus = await waitForLocalStorageKey("papalorderstatus", 5000);
+
+                // 3. Perform navigation and actions based on the status retrieved
+                if (!paypalorderstatus || paypalorderstatus !== "success") {
+                  toast.error('Order placement had ISSUES, Please Try again!');
+                  navigate('/cart');
+                } else {
+                  console.log("handlePayPalORderandButton :: status :: " + paypalorderstatus);
+                  /* avoid this till the Razor payment flow is completed 
+                  localStorage.removeItem('cart');
+                  localStorage.removeItem('razorpayorderstatus'); // Clean up status key
+                  setCart([]);
+                  toast.success('Order placed successfully!');
+                  navigate('/dashboard/user/orders');
+                  */
+                }
+
+
+          } catch (err ) {
+           //  return rejectWithValue(err.response?.data || "Order failed");
+             console.error("Pay Pal Order "+err.response?.data || "Order failed");
+               toast.error('Pay Pal  Order creation failed. Please try again.');
+          }
+     // const { nonce } = await instance.requestPaymentMethod();
+      
+   /* THis STEP stried in Razor Pay Button 
+       await axios.post(`/braintree/payment`, {
+        nonce,
+        cart,
+        deliveryInfo
+      });
+          */
+    
+    } catch (err) {
+      console.error(err);
+      toast.error('Payment failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCheckout = async () => {
     if (!validateForm()) return;
 
     try {
       setLoading(true);
       const { nonce } = await instance.requestPaymentMethod();
-      
-      await axios.post(`/braintree/payment`, {
+       const baseUrl =
+                  ( window.location.hostname === `${process.env.REACT_APP_NGROKLOCALHOST}` ||   window.location.hostname === 'localhost')
+                    ?  `${process.env.REACT_APP_RAZORORDERANDPAYMENTURL_LOCAL}`
+                : `${process.env.REACT_APP_RAZORORDERANDPAYMENTURL}`;
+      await axios.post(`${baseUrl}/api/braintree/payment`, {
         nonce,
         cart,
         deliveryInfo
@@ -132,6 +446,16 @@ export default function Checkout() {
       setLoading(false);
     }
   };
+
+ /** Razor Payment functions  */
+   const onClose = () => {
+    //setIsKYCOpen(true); // First, trigger the professional KYC form
+    //reset all the pay variables 
+    setGpayAmount(0);
+    setGpayOrderId(0);
+    setGpayCustomer(null);
+    setIsTrialGooglePayOpen(false); // trigger the professional google pay  form
+};
 
   return (
     <PageContainer>
@@ -226,6 +550,7 @@ export default function Checkout() {
                     <option value="Canada">Canada</option>
                     <option value="United Kingdom">United Kingdom</option>
                     <option value="Australia">Australia</option>
+                    <option value="India">India</option>
                   </select>
                 </div>
 
@@ -285,7 +610,57 @@ export default function Checkout() {
                 Payment Method
               </h2>
 
-              {!auth?.token ? (
+             {!auth?.token ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Please login to continue with payment
+                  </p>
+                  <Button
+                    onClick={() => navigate('/login', { state: '/checkout' })}
+                  >
+                    Login to Continue
+                  </Button>
+                </div>
+              ) :   cart?.length ? (
+                <div>
+                   <ReduxProvider>
+                     <ModalProvider> 
+                  <RazorPayButton amount={calculateTotal()} handleRazorPayOrderAndButton={handleRazorPayOrderAndButton} currency="INR" receipt ={`razor_receipt_${getTimeSeriesFormattedTimeKey()}  `} description =" "   onToken={ async (token )=> { 
+                    console.log("gpay token generated "+ JSON.stringify(token))
+                    onClose();
+                    
+                   }}/>
+                   </ModalProvider> 
+                   </ReduxProvider>
+                   { clientToken && cart?.length ? (
+                      <div>
+                        <PaymentContainer parentInstance={instance} parentClientToken={clientToken} parentSetInstance ={setInstance}/>
+                       {/**   <DropIn
+                          options={{
+                            authorization: clientToken,
+                            paypal: {
+                              flow: 'vault',
+                            },
+                          }}
+                          onInstance={(instance) => setInstance(instance)}
+                        />
+                        
+                        <div id="paypal-container-ZN82WD4CHVC8Y"></div>*/}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center py-8">
+                      
+                      </div>
+                    )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center py-8">
+                 
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                </div>
+              )}
+
+            {/*  {!auth?.token ? (
                 <div className="text-center py-8">
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     Please login to continue with payment
@@ -314,8 +689,14 @@ export default function Checkout() {
                 </div>
               )}
 
+              */}
+
               {/* Security badges */}
               <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                 <div className="p-6">
+                        {/* PayPal Hosted Button Component */}
+                           <PayPalButtonOrderIdSingle handlePayPalOrderAndButton={handlePayPalOrderAndButton} totalAmount={calculateTotal()} />
+                          </div>
                 <div className="flex items-center justify-center gap-6 text-sm text-gray-500 dark:text-gray-400">
                   <div className="flex items-center gap-1">
                     <Shield className="h-4 w-4" />

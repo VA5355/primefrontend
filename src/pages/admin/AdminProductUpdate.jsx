@@ -10,7 +10,7 @@ import Input from '../../components/ui/Input';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, Trash2, Package2, DollarSign, Hash, Truck, Image as ImageIcon, AlertTriangle } from 'lucide-react';
+import { Save, Trash2, Package2, IndianRupee, Hash, Truck, Image as ImageIcon, AlertTriangle } from 'lucide-react';
 import usePageTitle from '../../hooks/usePageTitle';
 
 
@@ -33,6 +33,9 @@ export default function AdminProductUpdate ()
   const [ id, setId ] = useState( "" );
   const [ loading, setLoading ] = useState( false );
   const [ showDeleteModal, setShowDeleteModal ] = useState( false );
+    const [slash , setSlash] = useState('');
+    const [isCreateObject, setIsCreateObject] = useState(true);
+
 
   //hook
   const navigate = useNavigate();
@@ -75,12 +78,75 @@ export default function AdminProductUpdate ()
       setShipping( data.shipping );
       setQuantity( data.quantity );
       setId( data.id );
+      if (data !== undefined && data.photoPath !==undefined && data.photoPath !==null){
+
+          // NOTE https://localhost:8000/api/uploads/products/asus-1-year-warranty-1785485875676.png  WORKS 
+          // but https://crinkly-trustful-turret.ngrok-free.dev/api/uploads/products/asus-1-year-warranty-1785485875676.png  NOT WROKS 
+        //setPhoto(data.photoPath);
+        //photoContentType = photo.type;
+        let photoUrl = '';//await fileToBase64(data.photoPath);
+        console.log('Product Photo path in the DB  '+data.photoPath)
+         let baseHost = 
+          ( window.location.hostname === `${process.env.REACT_APP_NGROKLOCALHOST}` ||   window.location.hostname === 'localhost')
+               ?  `localhost:8000`
+                :  'primebackend-sz0b.onrender.com' ; // `${process.env.REACT_APP_RAZORORDERANDPAYMENTURL}`;
+
+           let baseUrl = window.location.protocol + "//" + baseHost; 
+           let urlForPhotos = baseUrl + '/api'+data.photoPath
+           try {   
+
+             photoUrl =   URL.createObjectURL(urlForPhotos)//new  URL(urlForPhotos);
+           }catch(errr){
+            console.log("No need to createObjectURL ")
+              setIsCreateObject(false)
+           }
+       
+        console.log('Product Photo URL '+ photoUrl)
+        if(photoUrl !== undefined){
+          let baseUrl = window.location.protocol + "//" + window.location.host;   // window.location.origin ; //window.location.href;
+          
+          console.log('Base  URL '+ baseUrl)
+          //console.log('aCTUAL PRODUCT PHOTO  URL '+ baseUrl+data.photoPath);
+          console.log('aCTUAL PRODUCT PHOTO  URL '+ urlForPhotos);
+            setPhoto(urlForPhotos)
+        }
+        // need to check the above setPhoto works or you have to setPhoto(slash+data.photoPath)
+          let imgPath = data.photoPath.toString();
+             let photoFirstChar  =  imgPath.slice(0,1);
+             let isForwardSlash = photoFirstChar==='/' ? true : false;
+          console.log('AdminProductUpdate JSX loadProduct ::  photoPath contains forwardslash '+isForwardSlash );
+          if(isForwardSlash)
+          {
+             console.log(' photoPath no forwardslash  required '+isForwardSlash );
+                setSlash('');
+               // setPhoto(data.photoPath)
+          }else {
+              console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+              setSlash('/');
+              //setPhoto('/'+data.photoPath)
+          }
+        
+      }
+
+
+
+
+
     } catch ( err )
     {
       console.log( err );
     }
   };
 
+// Helper function to convert File to Base64 String
+const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+};
 
   const handleSubmit = async ( e ) =>
   {
@@ -88,6 +154,15 @@ export default function AdminProductUpdate ()
     setLoading(true);
     try
     {
+            let photoBase64 = null;
+      let photoContentType = null;
+
+            // Only convert if the user selected a NEW image file
+      if (photo) {
+        photoBase64 = await fileToBase64(photo);
+        photoContentType = photo.type;
+      }
+
       const productData = new FormData();
       photo && productData.append( 'photo', photo );
       productData.append( 'name', name );
@@ -97,7 +172,26 @@ export default function AdminProductUpdate ()
       productData.append( 'shipping', shipping );
       productData.append( 'quantity', quantity );
 
-      const { data } = await axios.put( `/product/${ id }`, productData );
+
+           // Standard JSON payload
+      const payload = {
+        name,
+        description,
+        price,
+        category,
+        shipping,
+        quantity,
+        // If photo was changed, pass base64. If not, pass null so backend keeps existing photo
+        photoData: photoBase64, 
+        photoContentType
+      };
+
+      const { data } = await axios.put(`/product-as-json/${id}`, payload);
+
+
+
+
+    //  const { data } = await axios.put( `/product/${ id }`, productData );
       if ( data?.error )
       {
         toast.error( data.error );
@@ -122,7 +216,8 @@ export default function AdminProductUpdate ()
     setLoading(true);
     try
     {
-      const { data } = await axios.delete( `/product/${ id }` );
+     // const { data } = await axios.delete( `/product/${ id }` );
+       const { data } = await axios.delete( `/product-as-json/${ id }` );
       toast.success( `${ data.name } is deleted` );
       navigate( "/dashboard/admin/products" );
 
@@ -196,9 +291,9 @@ export default function AdminProductUpdate ()
                         <div className="relative rounded-xl overflow-hidden shadow-lg">
                           <img
                             src={
-                              photo
+                              photo && isCreateObject
                                 ? URL.createObjectURL(photo)
-                                : '/placeholder.png'
+                                : ( photo ? photo  :'/placeholder.png')
                             }
                             alt="Product"
                             className="w-48 h-48 object-cover"
@@ -259,7 +354,7 @@ export default function AdminProductUpdate ()
                           onChange={e => setPrice(e.target.value)}
                           className="bg-white/80 dark:bg-gray-800/80 pl-8"
                         />
-                        <DollarSign className="absolute left-3 top-9 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                        <IndianRupee className="absolute left-3 top-9 h-4 w-4 text-gray-400 dark:text-gray-500" />
                       </motion.div>
 
                       {/* Category */}

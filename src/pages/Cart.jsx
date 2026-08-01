@@ -59,7 +59,25 @@ export default function Cart() {
     localStorage.removeItem('cart');
     toast.success('Cart cleared');
   };
-
+  const applySlash = (item) => {
+                if (item !== undefined && item.photoPath !==undefined && item.photoPath !==null){
+          let imgPath = item.photoPath.toString();
+             let photoFirstChar  =  imgPath.slice(0,1);
+             let isForwardSlash = photoFirstChar==='/' ? true : false;
+          console.log(' photoPath contains forwardslash '+isForwardSlash );
+          if(isForwardSlash)
+          {
+             console.log(' photoPath no forwardslash  required '+isForwardSlash );
+             //   setSlash('');
+             return '';
+          }else {
+              console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+            //  setSlash('/');
+            return '/';
+          }
+        
+      }
+  }
   const applyPromoCode = () => {
     setIsApplyingPromo(true);
     setTimeout(() => {
@@ -166,7 +184,7 @@ export default function Cart() {
                       <Link to={`/product/${item.slug}`}>
                         <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
                           <img
-                            src={item.photoPath ? `${process.env.REACT_APP_API}${item.photoPath}` : '/placeholder.png'}
+                            src={item.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${applySlash(item)}${item.photoPath}` : '/placeholder.png'}
                             alt={item.name}
                             className="w-full h-full object-cover hover:scale-105 transition-transform"
                           />

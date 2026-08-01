@@ -10,7 +10,7 @@ import Button from '../../components/ui/Button';
 import axios from 'axios';
 import { Link } from "react-router-dom";
 import moment from 'moment';
-import { Package, Search, Edit, Eye, Calendar, DollarSign, Hash } from 'lucide-react';
+import { Package, Search, Edit, Eye, Calendar, IndianRupee, Hash } from 'lucide-react';
 import usePageTitle from '../../hooks/usePageTitle';
 
 export default function AdminProducts ()
@@ -149,7 +149,7 @@ export default function AdminProducts ()
                               <div className="md:col-span-1">
                                 <div className="relative h-48 md:h-full overflow-hidden rounded-l-lg">
                                   <img
-                                    src={product?.photoPath ? `${process.env.REACT_APP_API}${product.photoPath}` : '/placeholder.png'}
+                                    src={product?.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${product.photoPath}` : '/placeholder.png'}
                                     alt={product.name}
                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                   />
@@ -180,7 +180,7 @@ export default function AdminProducts ()
                                     <div className="grid grid-cols-2 gap-4 mb-4">
                                       {product?.price && (
                                         <div className="flex items-center space-x-2 text-green-600">
-                                          <DollarSign className="h-4 w-4" />
+                                          <IndianRupee className="h-4 w-4" />
                                           <span className="font-semibold">${product.price}</span>
                                         </div>
                                       )}

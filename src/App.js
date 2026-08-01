@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+// 1. IMPORT YOUR GLOBAL SCHEMA
+import { GlobalSchema } from './components/GlobalSchema.jsx'; 
 
 import Menu from './components/nav/Menu.jsx';
 import CartDrawer from './components/cart/CartDrawer.jsx';
@@ -19,6 +21,7 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
+import BraintreeCallback from './pages/braintree/BraintreeCallback';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import AdminCategory from './pages/admin/AdminCategory.jsx';
 import AdminProduct from './pages/admin/AdminProduct.jsx';
@@ -30,6 +33,7 @@ import UserProfile from './pages/user/UserProfile.jsx';
 import UserOrders from './pages/user/UserOrders.jsx';
 import UserRoute from './components/routes/UserRoute.jsx';
 import AdminRoute from './components/routes/AdminRoute.jsx';
+import CustomerOnboarding from './pages/CustomerOnboarding.jsx';
 
 
 const PageNotFound = () =>
@@ -47,6 +51,9 @@ function AppContent() {
   
   return (
     <>
+          {/* 2. INJECT GLOBAL SCHEMA HERE */}
+      <GlobalSchema />
+
       <Menu />
       <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
       <Toaster position='top-right' />
@@ -66,6 +73,8 @@ function AppContent() {
           <Route path='/register' element={ <Register /> } />
           <Route path='/forgot-password' element={ <ForgotPassword /> } />
           <Route path='/reset-password' element={ <ResetPassword /> } />
+          <Route path='/braintree-rediect' element={ <BraintreeCallback /> } />
+          <Route path='/customeronboarding' element={ <CustomerOnboarding /> } />
 
           <Route path='/dashboard' element={ <UserRoute /> } >
             <Route path='user' element={ <UserDashboard /> } />

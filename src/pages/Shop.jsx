@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { 
   Filter, X, ChevronDown, Grid, List, Search,
-  SlidersHorizontal, Package, Tag, DollarSign
+  SlidersHorizontal, Package, Tag,  IndianRupee
 } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer';
 import PageHeader from '../components/layout/PageHeader';
@@ -196,7 +196,7 @@ export default function Shop() {
       {/* Price Filter */}
       <div className="mb-6">
         <h4 className="font-medium mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-          <DollarSign className="h-4 w-4" />
+          <IndianRupee className="h-4 w-4" />
           Price Range
         </h4>
         <div className="space-y-2">

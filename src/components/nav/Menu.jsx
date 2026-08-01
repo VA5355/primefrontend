@@ -27,7 +27,7 @@ import ThemeToggle from '../ui/ThemeToggle';
 
 export default function Menu() {
   const [auth, setAuth] = useAuth();
-  const [cart] = useCart();
+  const [cart, setCart] = useCart();
   const [, setCartDrawerOpen] = useCartDrawer();
   const categories = useCategory();
   const navigate = useNavigate();
@@ -49,6 +49,8 @@ export default function Menu() {
   const logout = () => {
     setAuth({ ...auth, user: null, token: "" });
     localStorage.removeItem("auth");
+      localStorage.removeItem('cart');
+      setCart([]);
     navigate("/login");
   };
 

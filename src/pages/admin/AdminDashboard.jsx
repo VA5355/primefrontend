@@ -12,7 +12,7 @@ import {
   Package,
   ShoppingCart,
   TrendingUp,
-  DollarSign,
+  IndianRupee,
   Eye,
   BarChart3,
   Activity,
@@ -65,7 +65,8 @@ export default function AdminDashboard() {
       ]);
 
       const orders = ordersRes.data || [];
-      const productsCount = productsCountRes.data || 0;
+      const productsCount = productsCountRes.data?.total || 0;
+      console.log("loadDashboardData :: productsCount "+JSON.stringify(productsCount));
 
       // Calculate total revenue from orders
       const totalRevenue = orders.reduce((sum, order) => {
@@ -101,7 +102,7 @@ export default function AdminDashboard() {
       value: `$${(typeof stats.totalRevenue === 'number' ? stats.totalRevenue : 0).toFixed(2)}`,
       change: 'Live data',
       changeType: 'neutral',
-      icon: DollarSign,
+      icon: IndianRupee,
       description: 'from all orders'
     },
     {
@@ -114,7 +115,7 @@ export default function AdminDashboard() {
     },
     {
       title: 'Total Products',
-      value: stats.totalProducts.toString(),
+      value: `${(typeof  stats.totalProducts=== 'number' ?  stats.totalProducts : 0).toFixed(2)}`,  
       change: 'Live data',
       changeType: 'neutral',
       icon: Package,
@@ -250,10 +251,10 @@ export default function AdminDashboard() {
                 <Card className="bg-white dark:bg-gray-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <CardContent className="p-6 relative">
-                    <div className="flex items-center justify-between">
+                    <div className={`flex ${stat.title === 'Total Revenue' ? 'w-20' : ''} items-center justify-between`}>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{stat.title}</p>
-                        <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">{stat.value}</p>
+                        <p className={`${stat.title === 'Total Revenue' ? 'text-2xl font-semibold' : 'text-3xl  font-bold'}  text-gray-900 dark:text-gray-100 mb-2`}>{stat.value}</p>
                         <div className="flex items-center gap-1">
                           {stat.changeType === 'positive' ? (
                             <ArrowUpRight className="w-4 h-4 text-green-500" />

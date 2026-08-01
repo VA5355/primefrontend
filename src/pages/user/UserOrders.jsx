@@ -26,7 +26,38 @@ export default function UserOrders() {
   const getOrders = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`/orders/${auth.user.id}`);
+   /* const usualOrders = await axios.get(`/orders/${auth.user.id}`);
+    const dataUsual = usualOrders.data; // e.g., [{ id: 1 }, { id: 2 }]
+
+    const razorOrders = await axios.get(`/razorpayorder/${auth.user.id}`);
+    const dataRazor = razorOrders.data; // e.g., [{ id: 3 }, { id: 4 }]
+
+    // ✅ Correct: Combine both arrays into one 'allOrders' array
+    const data = [...(dataUsual || []), ...(dataRazor || [])];
+    */
+    const [usualRes, razorRes] = await Promise.all([
+      axios.get(`/orders/${auth.user.id}`),
+      axios.get(`/razorpayorder/${auth.user.id}`)
+    ]);
+
+    // 1. Tag usual orders (optional, but good for consistency)
+    const taggedUsualOrders = (usualRes.data || []).map((order) => ({
+      ...order,
+      orderType: 'usual' // or 'standard'
+    }));
+
+    // 2. Add the extra 'razorder' tag to Razorpay orders
+    const taggedRazorOrders = (razorRes.data || []).map((order) => ({
+      ...order,
+      orderType: 'razorder', // 👈 Your extra tag
+      isRazorPay: true      // You can also add a boolean flag if helpful
+    }));
+
+    // 3. Combine both tagged arrays into your final data array
+    const data = [...taggedUsualOrders, ...taggedRazorOrders];
+
+
+     console.log("Total Orders for User "+ JSON.stringify(data))
       setOrders(data || []);
     } catch (err) {
       console.log(err);
@@ -65,6 +96,26 @@ export default function UserOrders() {
     }
   };
 
+  const applySlash = (item) => {
+                if (item !== undefined && item.photoPath !==undefined && item.photoPath !==null){
+          let imgPath = item.photoPath.toString();
+             let photoFirstChar  =  imgPath.slice(0,1);
+             let isForwardSlash = photoFirstChar==='/' ? true : false;
+          console.log(' photoPath contains forwardslash '+isForwardSlash );
+          if(isForwardSlash)
+          {
+             console.log(' photoPath no forwardslash  required '+isForwardSlash );
+             //   setSlash('');
+             return '';
+          }else {
+              console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+            //  setSlash('/');
+            return '/';
+          }
+        
+      }
+  }
+
   const ProductCard = ({ product, index }) => (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -74,7 +125,7 @@ export default function UserOrders() {
     >
       <div className="flex-shrink-0">
         <img
-          src={product.photoPath ? `${process.env.REACT_APP_API}${product.photoPath}` : '/placeholder.png'}
+          src={product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${applySlash(product)}${product.photoPath}` : '/placeholder.png'}
           alt={product.name}
           className="w-16 h-16 object-cover rounded-lg shadow-md"
           onError={(e) => {
@@ -207,13 +258,13 @@ export default function UserOrders() {
                               <div>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Payment</p>
                                 <div className="flex items-center gap-2">
-                                  {order.payment?.success ? (
+                                  {order.payment?.success  || order.orderType ==='razorder' ? (
                                     <CheckCircle className="w-4 h-4 text-green-500" />
                                   ) : (
                                     <XCircle className="w-4 h-4 text-red-500" />
                                   )}
-                                  <span className={`font-semibold ${order.payment?.success ? 'text-green-600' : 'text-red-600'}`}>
-                                    {order.payment?.success ? 'Completed' : 'Failed'}
+                                  <span className={`font-semibold ${order.payment?.success || order.orderType ==='razorder' ? 'text-green-600' : 'text-red-600'}`}>
+                                    {order.payment?.success || order.orderType ==='razorder' ? 'Completed' : 'Failed'}
                                   </span>
                                 </div>
                               </div>
@@ -234,7 +285,10 @@ export default function UserOrders() {
                           <div className="space-y-4">
                             <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                               <ShoppingBag className="w-5 h-5 text-indigo-600" />
-                              Order Items
+                              Order Items    { order.orderType === 'razorder' && (<Badge variant={getStatusVariant('delivered')} className="flex items-center gap-1">
+                                <StatusIcon className="w-3 h-3" />
+                                {  'Razor Pay Order'}
+                              </Badge>) } 
                             </h4>
                             <div className="grid gap-4">
                               {order.products?.map((product, productIndex) => (

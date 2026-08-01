@@ -10,7 +10,7 @@ import Input from '../../components/ui/Input';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Package2, DollarSign, Hash, Truck, Image as ImageIcon } from 'lucide-react';
+import { Upload, Package2, IndianRupee, Hash, Truck, Image as ImageIcon } from 'lucide-react';
 import usePageTitle from '../../hooks/usePageTitle';
 
 export default function AdminProduct ()
@@ -49,12 +49,31 @@ export default function AdminProduct ()
       console.log( err );
     }
   };
+ // Helper function to convert File to Base64 String
+ // file: File  
+ // return : Promise<string>
+ // resolve(reader.result as string); 
+const fileToBase64 = (file )  => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result );
+    reader.onerror = (error) => reject(error);
+  });
+};
 
   const handleSubmit = async ( e ) =>
   {
     e.preventDefault();
     try
     {
+
+      let photoBase64 = '';
+      if (photo) {
+        // Convert the image file to Base64 string
+        photoBase64 = await fileToBase64(photo);
+      }
+ 
       const productData = new FormData();
       productData.append( 'photo', photo );
       productData.append( 'name', name );
@@ -63,9 +82,25 @@ export default function AdminProduct ()
       productData.append( 'category', category );
       productData.append( 'shipping', shipping );
       productData.append( 'quantity', quantity );
-      // console.log( [ ...productData ] );\
 
-      const { data } = await axios.post( `/product/create`, productData );
+      // Send standard JSON payload with Base64 string
+      const payload = {
+        name,
+        description,
+        price,
+        category,
+        shipping,
+        quantity,
+        photoData: photoBase64, // Base64 string standard format: "data:image/png;base64,iVBOR..."
+        photoContentType: photo?.type || ''
+      };
+
+     // const { data } = await axios.post('/product-as-json/create', payload);
+
+
+       console.log( [ ...productData ] ); 
+
+    const { data } = await axios.post( `/product/create`, productData );
       if ( data?.error )
       {
         toast.error( data.error );
@@ -162,12 +197,17 @@ export default function AdminProduct ()
                             <span className="font-semibold">{photo ? photo.name : "Click to upload"}</span>
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG or JPEG (MAX. 5MB)</p>
-                        </div>
+                        </div>{/*onChange={e => setPhoto(e.target.files[0])}*/}
                         <input
                           type="file"
                           name="photo"
                           accept="image/*"
-                          onChange={e => setPhoto(e.target.files[0])}
+                          onChange={(e) => {
+                              if (e.target.files?.[0]) {
+                                setPhoto(e.target.files[0]);
+                              }
+                            }}
+
                           className="hidden"
                         />
                       </label>
@@ -206,7 +246,7 @@ export default function AdminProduct ()
                           onChange={e => setPrice(e.target.value)}
                           className="bg-white/80 dark:bg-gray-800/80 pl-8"
                         />
-                        <DollarSign className="absolute left-3 top-9 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                        <IndianRupee className="absolute left-3 top-9 h-4 w-4 text-gray-400 dark:text-gray-500" />
                       </motion.div>
 
                       {/* Category */}

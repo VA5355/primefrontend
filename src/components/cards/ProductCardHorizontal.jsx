@@ -1,11 +1,12 @@
 import moment from 'moment';
+import { useState, useEffect } from 'react';
 import { useCart } from '../../context/cart.js';
 
 export default function ProductCardHorizontal ( { p, remove = true } )
 {
   //context
   const [ cart, setCart ] = useCart();
-
+    const [slash , setSlash] = useState('');
   const removeFromCart = async ( productId ) =>
   {
     let myCart = [ ...cart ];
@@ -14,13 +15,34 @@ export default function ProductCardHorizontal ( { p, remove = true } )
     setCart( myCart );
     localStorage.setItem( 'cart', JSON.stringify( myCart ) );
   };
+ useEffect(()=>{
+      // check the product photoPath begins with / 
+      // if not append a /
+      let product   =p;
+      if (product !== undefined && product.photoPath !==undefined && product.photoPath !==null){
+          let imgPath = product.photoPath.toString();
+             let photoFirstChar  =  imgPath.slice(0,1);
+             let isForwardSlash = photoFirstChar==='/' ? true : false;
+          console.log(' photoPath contains forwardslash '+isForwardSlash );
+          if(isForwardSlash)
+          {
+             console.log(' photoPath no forwardslash  required '+isForwardSlash );
+                setSlash('');
+          }else {
+              console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+              setSlash('/');
+          }
+        
+      }
 
+
+  },[])
   return (
     <div className='rounded-lg shadow-md mb-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden'>
       <div className='flex'>
         <div className='w-1/3 md:w-1/4'>
           <img
-            src={ p.photoPath ? `${ process.env.REACT_APP_API }${ p.photoPath }` : '/placeholder.png' }
+            src={ p.photoPath ? `${ process.env.REACT_APP_API_PHOTOS }${slash}${ p.photoPath }` : '/placeholder.png' }
             alt={ p.name }
             className='w-full h-36 object-cover'
           />

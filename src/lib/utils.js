@@ -4,13 +4,21 @@ import { twMerge } from 'tailwind-merge';
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
-
+/*
 export function formatCurrency(amount) {
   return new Intl.NumberFormat('en-SG', {
     style: 'currency',
     currency: 'SGD',
   }).format(amount);
-}
+}*/
+// ✅ CORRECT: Indian Rupee Formatter
+export function formatCurrency  (amount)   {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 2,
+  }).format(amount);
+};
 
 export function calculateStock(quantity, sold) {
   return Math.max(0, quantity - sold);

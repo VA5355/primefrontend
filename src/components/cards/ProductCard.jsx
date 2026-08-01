@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Eye, Package, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -14,11 +14,33 @@ export default function ProductCard({ p: product, viewMode }) {
   const navigate = useNavigate();
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
-
+  const [slash , setSlash] = useState('');
   const stock = calculateStock(product.quantity, product.sold);
   const inStock = isInStock(product.quantity, product.sold);
   const isPopular = product.sold > 10;
   const isNew = new Date(product.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  useEffect(()=>{
+      // check the product photoPath begins with / 
+      // if not append a /
+      if (product !== undefined && product.photoPath !==undefined && product.photoPath !==null){
+          let imgPath = product.photoPath.toString();
+             let photoFirstChar  =  imgPath.slice(0,1);
+             let isForwardSlash = photoFirstChar==='/' ? true : false;
+          console.log(' photoPath contains forwardslash '+isForwardSlash );
+          if(isForwardSlash)
+          {
+             console.log(' photoPath no forwardslash  required '+isForwardSlash );
+                setSlash('');
+          }else {
+              console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+              setSlash('/');
+          }
+        
+      }
+
+
+  },[])
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
@@ -74,7 +96,7 @@ export default function ProductCard({ p: product, viewMode }) {
         
         {!imageError && product.photoPath ? (
           <img
-            src={`${process.env.REACT_APP_API}${product.photoPath}`}
+            src={`${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}`}
             alt={product.name}
             onLoad={() => setImageLoading(false)}
             onError={() => {

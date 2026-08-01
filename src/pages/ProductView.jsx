@@ -1,4 +1,9 @@
 import { useState, useEffect } from 'react';
+
+// 1. IMPORT PRODUCT SCHEMA & SEO HEAD
+import { ProductJsonLd } from '../components/ProductJsonLd.jsx';
+
+
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from 'axios';
@@ -22,6 +27,7 @@ import usePageTitle from '../hooks/usePageTitle';
 
 export default function ProductView() {
   const [product, setProduct] = useState({});
+   const [slash , setSlash] = useState('');
   usePageTitle(product.name || 'Product');
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +39,31 @@ export default function ProductView() {
   const navigate = useNavigate();
   const [cart, setCart] = useCart();
 
+
+ useEffect(()=>{
+      // check the product photoPath begins with / 
+      // if not append a /
+      if (product !== undefined && product.photoPath !==undefined && product.photoPath !==null){
+          let imgPath = product.photoPath.toString();
+             let photoFirstChar  =  imgPath.slice(0,1);
+             let isForwardSlash = photoFirstChar==='/' ? true : false;
+          console.log(' photoPath contains forwardslash '+isForwardSlash );
+          if(isForwardSlash)
+          {
+             console.log(' photoPath no forwardslash  required '+isForwardSlash );
+                setSlash('');
+          }else {
+              console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+              setSlash('/');
+          }
+        
+      }
+
+
+  },[])
+
+
+
   useEffect(() => {
     if (params?.slug) loadProduct();
   }, [params?.slug]);
@@ -42,6 +73,24 @@ export default function ProductView() {
     try {
       const { data } = await axios.get(`/product/${params.slug}`);
       setProduct(data);
+        if (data !== undefined && data.photoPath !==undefined){
+          let imgPath = data.photoPath.toString();
+             let photoFirstChar  =  imgPath.slice(0,1);
+             let isForwardSlash = photoFirstChar==='/' ? true : false;
+          console.log(' photoPath contains forwardslash '+isForwardSlash );
+          if(isForwardSlash)
+          {
+             console.log(' photoPath no forwardslash  required '+isForwardSlash );
+                setSlash('');
+          }else {
+              console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+              setSlash('/');
+          }
+        
+      }
+
+
+
       loadRelated(data.id, data.category.id);
     } catch (error) {
       console.error(error);
@@ -148,6 +197,9 @@ export default function ProductView() {
       </button>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+              {/* 2. INJECT PRODUCT SCHEMA HERE */}
+            <ProductJsonLd product={product} />
+
         {/* Product Images */}
         <div className="space-y-4">
           {/* Main Image */}
@@ -180,7 +232,7 @@ export default function ProductView() {
                 </Badge>
               )}
               <img
-                src={product.photoPath ? `${process.env.REACT_APP_API}${product.photoPath}` : '/placeholder.png'}
+                src={product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}` : '/placeholder.png'}
                 alt={product.name}
                 className={cn(
                   "w-full h-[500px] object-cover transition-transform duration-300",
@@ -212,7 +264,7 @@ export default function ProductView() {
                 )}
               >
                 <img
-                  src={product.photoPath ? `${process.env.REACT_APP_API}${product.photoPath}` : '/placeholder.png'}
+                  src={product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}` : '/placeholder.png'}
                   alt={`${product.name} ${i + 1}`}
                   className="w-full h-20 object-cover opacity-70"
                 />

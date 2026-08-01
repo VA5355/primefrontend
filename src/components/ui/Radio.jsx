@@ -1,7 +1,21 @@
-import { forwardRef } from 'react';
+import { forwardRef ,useEffect ,useState} from 'react';
 import { cn } from '../../lib/utils';
 
 const Radio = forwardRef(({ className, label, checked, onChange, name, value, ...props }, ref) => {
+  const [labelRefine, setLabelRefine] = useState(label);
+  useEffect(()=> {
+    let textLabel = label.toString();
+    if(textLabel.includes('$')){
+          textLabel = textLabel.replaceAll('$','₹');
+          setLabelRefine(textLabel);
+          console.log(' Label refined '+textLabel);
+    }
+    else {
+      console.log(' Label not refined '+textLabel);
+    }
+//label.includes('$') ==='$'? '₹':''
+
+  }, [])
   return (
     <label className="flex items-center cursor-pointer group">
       <div className="relative">
@@ -32,7 +46,7 @@ const Radio = forwardRef(({ className, label, checked, onChange, name, value, ..
       </div>
       {label && (
         <span className="ml-2 text-sm text-gray-700 dark:text-gray-300 select-none">
-          {label}
+          {labelRefine}
         </span>
       )}
     </label>

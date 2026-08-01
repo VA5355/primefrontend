@@ -58,7 +58,25 @@ export default function CartDrawer({ isOpen, onClose }) {
     onClose();
     navigate('/cart');
   };
-
+const applySlash = (item) => {
+                if (item !== undefined && item.photoPath !==undefined && item.photoPath !==null){
+          let imgPath = item.photoPath.toString();
+             let photoFirstChar  =  imgPath.slice(0,1);
+             let isForwardSlash = photoFirstChar==='/' ? true : false;
+          console.log(' photoPath contains forwardslash '+isForwardSlash );
+          if(isForwardSlash)
+          {
+             console.log(' photoPath no forwardslash  required '+isForwardSlash );
+             //   setSlash('');
+             return '';
+          }else {
+              console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+            //  setSlash('/');
+            return '/';
+          }
+        
+      }
+  }
   const freeShippingThreshold = 100;
   const cartTotal = getCartTotal();
   const freeShippingProgress = Math.min((cartTotal / freeShippingThreshold) * 100, 100);
@@ -150,7 +168,7 @@ export default function CartDrawer({ isOpen, onClose }) {
                         className="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
                       >
                         <img
-                          src={item.photoPath ? `${process.env.REACT_APP_API}${item.photoPath}` : '/placeholder.png'}
+                          src={item.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${applySlash(item)}${item.photoPath}` : '/placeholder.png'}
                           alt={item.name}
                           className="w-20 h-20 object-cover rounded-md"
                         />

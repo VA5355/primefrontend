@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "ignoreDeprecations": "6.0",
+    "moduleResolution": "node",
+    "jsx": "react-jsx",
+    /* Fix for TS5055: Prevent compiling JS files over themselves */
+    "rootDir" : "./src", 
+   /* F  "outDir": "./dist",*/
+    /* OR use "noEmit": true if you build via Vite/Webpack and only use tsc for type-checking */
+    /* Fix 1: Stop TypeScript from checking library/node_modules files */
+    "skipLibCheck": true,
+    
+    /* Fix 2: Allow React default imports (import React from "react") */
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    
+    /* Fix 3: Enable `@/` alias resolution */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    
+    /* Other recommended flags for JS/TS mix */
+    "allowJs": true,
+    "noEmit": false
+  },
+  "include": [
+  "src/redux/hooks/**/*.ts",
+  "src/redux/slices/**/*.ts",
+  "src/redux/**/*.ts",
+    "src/redux/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build"
+  ]
+}

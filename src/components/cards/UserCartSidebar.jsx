@@ -45,7 +45,7 @@ export default function UserCartSidebar ()
     {
       total += item.price;
     } );
-    return total.toLocaleString( "en-US", {
+    return total.toLocaleString( "en-IN", {
       style: "currency",
       currency: "USD",
     } );
