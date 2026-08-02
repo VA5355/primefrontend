@@ -9,7 +9,9 @@ import {
   Truck, 
   Clock, 
   Receipt, 
-  CreditCard 
+  CreditCard,
+  Hash,
+  Hourglass
 } from 'lucide-react';
 import { useCart } from '../context/cart';
 import PageContainer from '../components/layout/PageContainer';
@@ -28,28 +30,34 @@ export default function CustomerOnboarding() {
   const [paymentDetails, setPaymentDetails] = useState({
     orderId: '',
     paymentId: '',
+    utr: '',
     amount: 0,
     createdAt: '',
     description: '',
   });
 
   useEffect(() => {
-    // 1. Extract params passed back by Razorpay or custom redirect
-    const razorpayPaymentId = searchParams.get('razorpay_payment_id') || 'pay_' + Math.random().toString(36).substring(2, 9);
-    const razorpayOrderId = searchParams.get('razorpay_order_id') || 'order_' + Math.random().toString(36).substring(2, 9);
+    // Read search parameters passed from Checkout
+    const paramUtr = searchParams.get('utr');
+    const paramOrderId = searchParams.get('order_id') || searchParams.get('razorpay_order_id') || 'ORD_' + Math.random().toString(36).substring(2, 9).toUpperCase();
+    
+    // Explicitly set Txn Reference to TBD if absent, rather than generating a random ID
+    const paramPaymentId = searchParams.get('razorpay_payment_id') || 'TBD (Order in Processing)';
+    const paramAmount = parseFloat(searchParams.get('amount')) || 32399.35;
 
-    // 2. Clear shopping cart upon successful payment workflow completion
+    // Clear shopping cart upon checkout arrival
     localStorage.removeItem('cart');
-    localStorage.setItem('razorpayorderstatus', 'success');
+    localStorage.setItem('orderstatus', 'success');
     setCart([]);
 
     // 3. Populate payment summary details
     setPaymentDetails({
-      orderId: razorpayOrderId,
-      paymentId: razorpayPaymentId,
-      amount: 32399.35, // Dynamic or retrieved total
+      orderId: paramOrderId,
+      paymentId: paramPaymentId,
+      utr: paramUtr || '',
+      amount: paramAmount,
       createdAt: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-      description: 'Order placed via Razorpay Webstore Storefront',
+      description: 'Order placed via Direct Merchant UPI (Prime Computer Network)',
     });
   }, [searchParams, setCart]);
 
@@ -61,12 +69,12 @@ export default function CustomerOnboarding() {
         transition={{ duration: 0.4 }}
       >
         <PageHeader
-          title="Payment"
+          title="Payment Confirmation"
           subtitle="Complete payment status"
           className="bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-700 text-white rounded-2xl p-8 mb-6 shadow-lg"
         />
 
-        {/* Navigation back option */}
+        {/* Back navigation */}
         <button
           onClick={() => navigate('/shop')}
           className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-indigo-600 mb-6 transition-colors"
@@ -76,13 +84,13 @@ export default function CustomerOnboarding() {
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Side: Payment Details */}
+          {/* Left Side: Summary & Payment Info */}
           <div className="lg:col-span-2 space-y-6">
             <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
               <CardContent className="p-6 space-y-6">
                 <div className="flex items-center gap-2 text-gray-900 dark:text-gray-100 font-semibold text-lg border-b pb-4">
                   <CreditCard className="h-5 w-5 text-indigo-600" />
-                  Payment Details
+                  Payment Summary
                 </div>
 
                 <div className="space-y-4 text-gray-700 dark:text-gray-300">
@@ -91,10 +99,22 @@ export default function CustomerOnboarding() {
                     <span className="font-mono text-gray-900 dark:text-gray-100 font-semibold">{paymentDetails.orderId}</span>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800">
-                    <span className="font-medium text-gray-500 dark:text-gray-400">Payment ID:</span>
-                    <span className="font-mono text-gray-900 dark:text-gray-100">{paymentDetails.paymentId}</span>
-                  </div>
+                  {/* UTR vs Fallback Txn Reference */}
+                  {paymentDetails.utr ? (
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 bg-indigo-50/50 dark:bg-indigo-950/20 px-3 rounded-lg">
+                      <span className="font-medium text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+                        <Hash className="h-4 w-4" /> UPI Ref / UTR No:
+                      </span>
+                      <span className="font-mono text-indigo-950 dark:text-indigo-200 font-bold">{paymentDetails.utr}</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800">
+                      <span className="font-medium text-gray-500 dark:text-gray-400">Txn Reference:</span>
+                      <span className="font-mono text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+                        <Hourglass className="h-3.5 w-3.5" /> {paymentDetails.paymentId}
+                      </span>
+                    </div>
+                  )}
 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800">
                     <span className="font-medium text-gray-500 dark:text-gray-400">Payment Amount:</span>
@@ -122,18 +142,21 @@ export default function CustomerOnboarding() {
             </Card>
           </div>
 
-          {/* Right Side: Order Confirmation Summary & CTA */}
+          {/* Right Side: Order Confirmation Summary */}
           <div className="lg:col-span-1">
             <Card className="sticky top-24 shadow-sm border border-gray-100 dark:border-gray-800">
               <CardContent className="p-6 space-y-6">
                 <div className="flex items-center gap-2 text-gray-900 dark:text-gray-100 font-semibold text-lg border-b pb-4">
                   <CheckCircle className="h-5 w-5 text-emerald-500" />
-                  Order Summary
+                  Order Status
                 </div>
 
-                <div className="bg-emerald-50 dark:bg-emerald-950/40 p-4 rounded-xl flex items-center gap-3 text-emerald-700 dark:text-emerald-300 text-sm">
-                  <Receipt className="h-5 w-5 flex-shrink-0" />
-                  <p>Your payment was completed successfully!</p>
+                {/* Processing State Messaging */}
+                <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 p-4 rounded-xl flex items-start gap-3 text-amber-800 dark:text-amber-200 text-sm">
+                  <Receipt className="h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+                  <p className="leading-snug">
+                    Order stands submitted once transactions are passed through.
+                  </p>
                 </div>
 
                 <Button

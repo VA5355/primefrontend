@@ -19,6 +19,7 @@ import { useAuth } from '../../context/auth';
 import { useCart } from '../../context/cart';
 import { useCartDrawer } from '../../context/cartDrawer';
 import useCategory from '../../hooks/useCategory';
+ import   useIsMobile   from '../../hooks/useIsMobile';
 import { cn } from '../../lib/utils';
 // Badge import removed - not used
 import SearchModal from './SearchModal';
@@ -37,6 +38,8 @@ export default function Menu() {
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+   // CHECK MOBILE OR DESTOP
+   const isMobile = useIsMobile();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -131,12 +134,14 @@ export default function Menu() {
             {/* Right Side Icons */}
             <div className="flex items-center gap-2">
               {/* Search Button */}
-              <button
+              {/** in Mobile view disable search button  */}
+              { !isMobile && ( <button
                 onClick={() => setSearchOpen(true)}
                 className="p-2 text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors"
               >
                 <Search className="h-5 w-5" />
-              </button>
+              </button> )}
+             
 
               {/* Cart */}
               <button

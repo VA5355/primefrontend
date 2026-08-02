@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import { motion } from 'framer-motion';
-import axios from 'axios';
-import DropIn from 'braintree-web-drop-in-react';
 import { toast } from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+import { QRCodeSVG } from 'qrcode.react';
 import {
   CreditCard, MapPin, User, Mail, Phone, Home,
-  ShoppingCart, ArrowLeft, Shield, Truck, Clock
+  ShoppingCart, ArrowLeft, Shield, Truck, Clock, X, ChevronRight, CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '../context/auth';
 import { useCart } from '../context/cart';
@@ -15,56 +14,49 @@ import PageHeader from '../components/layout/PageHeader';
 import Button from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
 import { formatCurrency } from '../lib/utils';
-import { REACT_APP_RAZORORDERANDPAYMENTURL } from '../libs/client';
-import usePageTitle from '../hooks/usePageTitle';
-import {ReduxProvider} from '../providers/ReduxProvider'
-import { ModalProvider } from '../providers/ModalProvider';
-import RazorPayButton from './RazorPayButton';
-import PaymentContainer from './PaymentContainer';
-import PayPalButton from './PayPalButton';
-import PayPalButtonOrderId from './PayPalButtonOrderId';
-import PayPalButtonOrderIdSingle from './PayPalButtonOrderIdSingle';
 
-
- function     getTimeSeriesFormattedTimeKey()  {
-  const now = new Date();
-  const year = now.getFullYear().toString().padStart(2, '0');
-  const month = now.getMonth().toString().padStart(2, '0');
-  const day = now.getDay().toString().padStart(2, '0');
-  const hour = now.getHours().toString().padStart(2, '0');
-  let min5 = now.getMinutes() ;
-       min5 = min5  - 5;
-  const min = min5.toString().padStart(2, '0');
-  const sec = now.getSeconds().toString().padStart(2, '0');
-  const ms = now.getMilliseconds().toString().padStart(3, '0');
-  return `${year}-${month}-${day} ${hour}:${min}:${sec}`;
-}
+const UPI_APPS = [
+  { id: 'all', name: 'Generic UPI', color: 'bg-indigo-600', badge: 'All Apps' },
+  { id: 'gpay', name: 'Google Pay', color: 'bg-blue-600', badge: 'GPay' },
+  { id: 'paytm', name: 'Paytm', color: 'bg-sky-500', badge: 'Paytm' },
+  { id: 'phonepe', name: 'PhonePe', color: 'bg-purple-600', badge: 'PhonePe' },
+];
 
 export default function Checkout() {
-  usePageTitle('Checkout');
   const [auth] = useAuth();
-  const [cart, setCart] = useCart();
+  const [cart] = useCart();
   const navigate = useNavigate();
 
-  // Payment states
-  const [clientToken, setClientToken] = useState('');
-  const [instance, setInstance] = useState(null);
-  const [loading, setLoading] = useState(false);
-   /** Razor Payment functions  */
-      const [gpayamount, setGpayAmount] = useState(0);
-        const [gpayOrderId, setGpayOrderId] = useState(null);
-         const [gpayCustomer, setGpayCustomer] = useState(null); 
-         const [isTrialGooglePayOpen, setIsTrialGooglePayOpen] = useState(false);
   // Form states
+  const [isPaymentConfirmed, setIsPaymentConfirmed] = useState(false);
   const [deliveryInfo, setDeliveryInfo] = useState({
-    fullName: auth?.user?.name || '',
-    email: auth?.user?.email || '',
-    phone: auth?.user?.phone || '',
-    address: auth?.user?.address || '',
+    fullName: '',
+    email: '',
+    phone: '',
+    address: '',
     city: '',
     postalCode: '',
-    country: 'United States'
+    country: 'India'
   });
+
+  // Modal Flow States
+  const [gpayamount, setGpayAmount] = useState(0);
+  const [isTrialGooglePayOpen, setIsTrialGooglePayOpen] = useState(false);
+  const [showDesktopQR, setShowDesktopQR] = useState(false);
+  const [selectedApp, setSelectedApp] = useState('all');
+
+  // Timer & UTR Step States
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
+  const [isMobile, setIsMobile] = useState(false);
+  const [showUtrStep, setShowUtrStep] = useState(false);
+  const [utrNumber, setUtrNumber] = useState('');
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (!cart?.length) {
@@ -72,724 +64,325 @@ export default function Checkout() {
       return;
     }
     if (auth?.token) {
-      getClientToken();
+      setDeliveryInfo({
+        fullName: auth?.user?.name || '',
+        email: auth?.user?.email || '',
+        phone: auth?.user?.phone || '',
+        address: auth?.user?.address || '',
+        city: '',
+        postalCode: '',
+        country: 'India'
+      });
     }
   }, [auth?.token, cart?.length, navigate]);
 
-  const getClientToken = async () => {
-    try {
-       const baseUrl =
-             ( window.location.hostname === `${process.env.REACT_APP_NGROKLOCALHOST}` ||   window.location.hostname === 'localhost')
-               ?  `${process.env.REACT_APP_RAZORORDERANDPAYMENTURL_LOCAL}`
-                : `${process.env.REACT_APP_RAZORORDERANDPAYMENTURL}`;
-      console.log('window.location.hostname '+window.location.hostname)
-      console.log('REACT_APP_NGROKLOCALHOST '+process.env.REACT_APP_NGROKLOCALHOST)
-      console.log('baseUrl '+baseUrl)
-      const { data } = await axios.get(`${baseUrl}/api/braintree/getToken`);
-      setClientToken(data.clientToken);
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to initialize payment');
+  // Countdown timer effect
+  useEffect(() => {
+    let timer;
+    if (showDesktopQR && !showUtrStep && timeLeft > 0) {
+      timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+    } else if (timeLeft === 0 && !showUtrStep) {
+      // Switch automatically to UTR input when timer expires
+      setShowUtrStep(true);
     }
-  };
+    return () => clearInterval(timer);
+  }, [showDesktopQR, showUtrStep, timeLeft]);
 
-  const calculateSubtotal = () => {
-    return cart.reduce((total, item) => total + (item.price * (item.quantity || 1)), 0);
-  };
+  const calculateSubtotal = () => cart.reduce((total, item) => total + (item.price * (item.quantity || 1)), 0);
+  const calculateShipping = () => (calculateSubtotal() > 100 ? 0 : 10);
+  const calculateTax = () => calculateSubtotal() * 0.08;
+  const calculateTotal = () => calculateSubtotal() + calculateShipping() + calculateTax();
 
-  const calculateShipping = () => {
-    const subtotal = calculateSubtotal();
-    return subtotal > 100 ? 0 : 10;
-  };
-  const getShortDateTime  = () => {
-    const now = new Date();
-    const shortIST = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'short' });
-      console.log("shortIST "+shortIST); 
-    /*
-    const shortDateTime = now.toLocaleString('en-IN', { 
-      dateStyle: 'short', 
-      timeStyle: 'short' 
-    });
-    console.log(shortDateTime); */
-     return shortIST;
-  }
-  const getShortDayWithSeconds = () => {
-    /*
-        const options = { 
-      weekday: 'short',    // "Mon", "Tue", etc.
-      timeZone: 'Asia/Kolkata', 
-      hour12: false,       // Use true for 12-hour AM/PM format
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
-    };
-
-    const formatter = new Intl.DateTimeFormat('en-IN', options);
-     */
-        const options = { 
-      timeZone: 'Asia/Kolkata',
-      weekday: 'short', 
-      day: 'numeric', 
-      month: 'short', 
-      year: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit',
-      hour12: false // Set to true for AM/PM format
-    };
-
-    const istDateTime = new Date().toLocaleString('en-IN', options);
-    console.log(istDateTime); 
-    // Output example: "Wed, 22 Jul 2026, 10:02:15"
-    let formatNoSpaceComa = istDateTime.replace(", ","_").replace(" ","_").trim();
-    console.log("ShortDayWithSeconds :: " + formatNoSpaceComa); 
-    return formatNoSpaceComa;
-
-  }
-  const getDeliveryToUserDetails = () => {
-        const required = ['fullName', 'email', 'phone', 'address', 'city', 'postalCode'];
-     let deliveryUser = "";   
-    for (const field of required) {
-
-      if (!deliveryInfo[field]?.trim()) {
-       // toast.error(`Please fill in ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
-
-         deliveryUser = deliveryUser + " "+field+" : NA"
-      }
-      else {
-           deliveryUser = deliveryUser +  " "+field+ " : " + deliveryInfo[field]?.trim()
-      }
-    }
-     return deliveryUser;
-  }
-  const calculateTax = () => {
-    const subtotal = calculateSubtotal();
-    return subtotal * 0.08; // 8% tax
-  };
-
-  const calculateTotal = () => {
-    return calculateSubtotal() + calculateShipping() + calculateTax();
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setDeliveryInfo(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setDeliveryInfo(prev => ({ ...prev, [name]: value }));
   };
 
-  const validateForm = () => {
-    if (!auth?.token) {
-      toast.error('Please login to complete checkout');
-      navigate('/login', { state: '/checkout' });
-      return false;
-    }
-
+  const isFormValid = () => {
     const required = ['fullName', 'email', 'phone', 'address', 'city', 'postalCode'];
-    for (const field of required) {
-      if (!deliveryInfo[field]?.trim()) {
-        toast.error(`Please fill in ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
-        return false;
-      }
-    }
-
-    if (!instance) {
-      toast.error('Payment method not initialized');
-      return false;
-    }
-
-    return true;
+    return required.every(field => deliveryInfo[field]?.trim()) && deliveryInfo?.country === 'India';
   };
 
-  const handleRazorPayOrderAndButton = async () => {
-    if (!validateForm())
-      {
-  console.log("handleRazorPayORderandButton :: validating RazorPayOrder Checkout Form failed  ")
-        return;
-      } 
+  const handlePlaceOrderClick = () => {
+    if (!isFormValid()) {
+      toast.error('Please complete all delivery fields and select India as Country.');
+      return;
+    }
+    if (!isPaymentConfirmed) {
+      toast.error('Please confirm the payment checkbox.');
+      return;
+    }
+    setGpayAmount(calculateTotal());
+    setIsTrialGooglePayOpen(true);
+  };
 
-    try {
-      setLoading(true);
-      let description = "Cart initiated at "+getShortDateTime() +" by "+getDeliveryToUserDetails() ;
-      //   const { nonce } =  await Promise.resolve(description)  // this does not set the nounce
-         //  const   nonce  =   (descriptionAct)    /// descriptive does not work lets try some one time numeric number 
-        const num = Math.floor(1000000000 + Math.random() * 9000000000); // cannot start with 0 
-       // const num = Array.from({length: 10}, () => Math.floor(Math.random() * 10)).join('');
-          console.log('nonce :: ' +num); // Example: 4820519374
-              const   nonce  = num;
-     let isRazorPayOrderReady = false; 
-      // CREATE A Razor Pay Order at Prime Computer & Network DATABASE
-      
-      let payload = { }
-      if(cart !==undefined && Array.isArray(cart) && cart.length >0){
-         if(deliveryInfo !== undefined){
-             payload.name = "razorPayOrder_"+deliveryInfo.email+"_"+getShortDayWithSeconds();
-             payload.deliveryInfo = deliveryInfo;
-             payload.cart = cart;
-         }
-            
-      } 
-      // await axios.post(`/category/create`, { name: name.trim() });
-        try {
-            const baseUrl =
-              ( window.location.hostname === `${process.env.REACT_APP_NGROKLOCALHOST}` ||   window.location.hostname === 'localhost')
-                ?  `${process.env.REACT_APP_RAZORORDERANDPAYMENTURL_LOCAL}`
-                : `${process.env.REACT_APP_RAZORORDERANDPAYMENTURL}`;
-                  // https://onedinaar.com
-            // `${baseUrl}/api/razorpayorder/create`,
-            /**
-               {
-                params: payload,
-                withCredentials: true,
-              }
-             */
-            console.log("handleRazorPayORderandButton :: sending RazorPayOrder to  "+JSON.stringify(axios.baseUrl))
-            console.log("handleRazorPayORderandButton :: payload ::  "+JSON.stringify(payload))
-              // 1. Helper function that polls localStorage every 200ms up to maxTimeout (5000ms)
-                const waitForLocalStorageKey = (keyName, maxTimeoutMs = 5000, checkIntervalMs = 200) => {
-                  return new Promise((resolve) => {
-                    const startTime = Date.now();
+  const handlePayWithUPI = () => {
+    setIsTrialGooglePayOpen(false);
+    setTimeLeft(300);
+    setShowUtrStep(false);
+    setShowDesktopQR(true);
+  };
 
-                    const interval = setInterval(() => {
-                      const value = localStorage.getItem(keyName);
-
-                      // If the key is set (and not empty)
-                      if (value !== null && value !== undefined && value !== "") {
-                        clearInterval(interval);
-                        resolve(value);
-                      } 
-                      // If timeout reached (5 seconds elapsed)
-                      else if (Date.now() - startTime >= maxTimeoutMs) {
-                        clearInterval(interval);
-                        resolve(null); // Resolves null if key was not set in time
-                      }
-                    }, checkIntervalMs);
-                  });
-                };
-
-                // 2. Wait for the key to be set in localStorage
-                const razorpayorderstatus = await waitForLocalStorageKey("razorpayorderstatus", 5000);
-
-                // 3. Perform navigation and actions based on the status retrieved
-                if (!razorpayorderstatus || razorpayorderstatus !== "success") {
-                  toast.error('Order placement had ISSUES, Please Try again!');
-                  navigate('/cart');
-                } else {
-                  console.log("handleRazorPayORderandButton :: status :: " + razorpayorderstatus);
-                  /* avoid this till the Razor payment flow is completed 
-                  localStorage.removeItem('cart');
-                  localStorage.removeItem('razorpayorderstatus'); // Clean up status key
-                  setCart([]);
-                  toast.success('Order placed successfully!');
-                  navigate('/dashboard/user/orders');
-                  */
-                }
-
-
-          } catch (err ) {
-           //  return rejectWithValue(err.response?.data || "Order failed");
-             console.error("Razor Pay Order "+err.response?.data || "Order failed");
-               toast.error('Razor Pay Order creation failed. Please try again.');
-          }
-     // const { nonce } = await instance.requestPaymentMethod();
-      
-   /* THis STEP stried in Razor Pay Button 
-       await axios.post(`/braintree/payment`, {
-        nonce,
-        cart,
-        deliveryInfo
-      });
-          */
+  const completeOrderAndRedirect = (utrValue = '') => {
+    const orderId = 'ORD_' + Math.random().toString(36).substring(2, 9).toUpperCase();
+    const txnParams = new URLSearchParams({
+      order_id: orderId,
+      amount: gpayamount,
+      utr: utrValue,
+      status: 'success'
+    });
     
-    } catch (err) {
-      console.error(err);
-      toast.error('Payment failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
- const handlePayPalOrderAndButton = async () => {
-    if (!validateForm())
-      {
-  console.log("handlePayPalOrderAndButton :: validating PayPalOrder Checkout Form failed  ")
-        return;
-      } 
-
-    try {
-      setLoading(true);
-      let description = "Cart initiated at "+getShortDateTime() +" by "+getDeliveryToUserDetails() ;
-      //   const { nonce } =  await Promise.resolve(description)  // this does not set the nounce
-         //  const   nonce  =   (descriptionAct)    /// descriptive does not work lets try some one time numeric number 
-        const num = Math.floor(1000000000 + Math.random() * 9000000000); // cannot start with 0 
-       // const num = Array.from({length: 10}, () => Math.floor(Math.random() * 10)).join('');
-          console.log('nonce :: ' +num); // Example: 4820519374
-              const   nonce  = num;
-     let isPayPalOrderReady = false; 
-      // CREATE A Razor Pay Order at Prime Computer & Network DATABASE
-      
-      let payload = { }
-      if(cart !==undefined && Array.isArray(cart) && cart.length >0){
-         if(deliveryInfo !== undefined){
-             payload.name = "payPalOrder_"+deliveryInfo.email+"_"+getShortDayWithSeconds();
-             payload.deliveryInfo = deliveryInfo;
-             payload.cart = cart;
-         }
-         localStorage.setItem('paypalOrder',payload);
-         // this is set so that the PayPalButtonOrderId can read the payPalOrder generated above 
-
-      } 
-      // await axios.post(`/category/create`, { name: name.trim() });
-        try {
-            const baseUrl =
-              ( window.location.hostname === `${process.env.REACT_APP_NGROKLOCALHOST}` ||   window.location.hostname === 'localhost')
-                ?  `${process.env.REACT_APP_PAYPALORDERANDPAYMENTURL_LOCAL}`
-                : `${process.env.REACT_APP_PAYPALORDERANDPAYMENTURL}`;
-                  // https://onedinaar.com
-            // `${baseUrl}/api/razorpayorder/create`,
-            /**
-               {
-                params: payload,
-                withCredentials: true,
-              }
-             */
-            console.log("handlePayPalORderandButton :: sending handlePayPalOrder to  "+JSON.stringify(axios.baseUrl))
-            console.log("handlePayPalORderandButton :: payload ::  "+JSON.stringify(payload))
-              // 1. Helper function that polls localStorage every 200ms up to maxTimeout (5000ms)
-                const waitForLocalStorageKey = (keyName, maxTimeoutMs = 5000, checkIntervalMs = 200) => {
-                  return new Promise((resolve) => {
-                    const startTime = Date.now();
-
-                    const interval = setInterval(() => {
-                      const value = localStorage.getItem(keyName);
-
-                      // If the key is set (and not empty)
-                      if (value !== null && value !== undefined && value !== "") {
-                        clearInterval(interval);
-                        resolve(value);
-                      } 
-                      // If timeout reached (5 seconds elapsed)
-                      else if (Date.now() - startTime >= maxTimeoutMs) {
-                        clearInterval(interval);
-                        resolve(null); // Resolves null if key was not set in time
-                      }
-                    }, checkIntervalMs);
-                  });
-                };
-
-                // 2. Wait for the key to be set in localStorage
-                const paypalorderstatus = await waitForLocalStorageKey("papalorderstatus", 5000);
-
-                // 3. Perform navigation and actions based on the status retrieved
-                if (!paypalorderstatus || paypalorderstatus !== "success") {
-                  toast.error('Order placement had ISSUES, Please Try again!');
-                  navigate('/cart');
-                } else {
-                  console.log("handlePayPalORderandButton :: status :: " + paypalorderstatus);
-                  /* avoid this till the Razor payment flow is completed 
-                  localStorage.removeItem('cart');
-                  localStorage.removeItem('razorpayorderstatus'); // Clean up status key
-                  setCart([]);
-                  toast.success('Order placed successfully!');
-                  navigate('/dashboard/user/orders');
-                  */
-                }
-
-
-          } catch (err ) {
-           //  return rejectWithValue(err.response?.data || "Order failed");
-             console.error("Pay Pal Order "+err.response?.data || "Order failed");
-               toast.error('Pay Pal  Order creation failed. Please try again.');
-          }
-     // const { nonce } = await instance.requestPaymentMethod();
-      
-   /* THis STEP stried in Razor Pay Button 
-       await axios.post(`/braintree/payment`, {
-        nonce,
-        cart,
-        deliveryInfo
-      });
-          */
-    
-    } catch (err) {
-      console.error(err);
-      toast.error('Payment failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    setShowDesktopQR(false);
+    navigate(`/customer-onboarding?${txnParams.toString()}`);
   };
 
-  const handleCheckout = async () => {
-    if (!validateForm()) return;
-
-    try {
-      setLoading(true);
-      const { nonce } = await instance.requestPaymentMethod();
-       const baseUrl =
-                  ( window.location.hostname === `${process.env.REACT_APP_NGROKLOCALHOST}` ||   window.location.hostname === 'localhost')
-                    ?  `${process.env.REACT_APP_RAZORORDERANDPAYMENTURL_LOCAL}`
-                : `${process.env.REACT_APP_RAZORORDERANDPAYMENTURL}`;
-      await axios.post(`${baseUrl}/api/braintree/payment`, {
-        nonce,
-        cart,
-        deliveryInfo
-      });
-
-      localStorage.removeItem('cart');
-      setCart([]);
-      toast.success('Order placed successfully!');
-      navigate('/dashboard/user/orders');
-    } catch (err) {
-      console.error(err);
-      toast.error('Payment failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
- /** Razor Payment functions  */
-   const onClose = () => {
-    //setIsKYCOpen(true); // First, trigger the professional KYC form
-    //reset all the pay variables 
-    setGpayAmount(0);
-    setGpayOrderId(0);
-    setGpayCustomer(null);
-    setIsTrialGooglePayOpen(false); // trigger the professional google pay  form
-};
+  // UPI Link generator
+  const merchantUpiId = "primecomputernetwork@upi"; 
+  const merchantName = "Prime Computer Network";
+  const merchantUpiLink = `upi://pay?pa=${merchantUpiId}&pn=${encodeURIComponent(merchantName)}&am=${gpayamount}&cu=INR`;
 
   return (
     <PageContainer>
-      <PageHeader
-        title="Checkout"
-        subtitle="Complete your order"
-      />
+      <PageHeader title="Checkout" subtitle="Complete your order" />
 
-      {/* Back to Cart */}
       <button
         onClick={() => navigate('/cart')}
         className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-indigo-600 mb-6 transition-colors"
       >
-        <ArrowLeft className="h-4 w-4" />
-        Back to cart
+        <ArrowLeft className="h-4 w-4" /> Back to cart
       </button>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Delivery & Payment */}
+        {/* Left Form Column */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Delivery Information */}
           <Card>
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-indigo-600" />
-                Delivery Information
+                <MapPin className="h-5 w-5 text-indigo-600" /> Delivery Information
               </h2>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      type="text"
-                      name="fullName"
-                      value={deliveryInfo.fullName}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                      placeholder="John Doe"
-                    />
-                  </div>
+                  <label className="block text-sm font-medium mb-1">Full Name</label>
+                  <input type="text" name="fullName" value={deliveryInfo.fullName} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg dark:bg-gray-800" />
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Email
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      type="email"
-                      name="email"
-                      value={deliveryInfo.email}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                      placeholder="john@example.com"
-                    />
-                  </div>
+                  <label className="block text-sm font-medium mb-1">Email</label>
+                  <input type="email" name="email" value={deliveryInfo.email} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg dark:bg-gray-800" />
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Phone
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={deliveryInfo.phone}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                      placeholder="+1 234 567 8900"
-                    />
-                  </div>
+                  <label className="block text-sm font-medium mb-1">Phone</label>
+                  <input type="tel" name="phone" value={deliveryInfo.phone} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg dark:bg-gray-800" />
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Country
-                  </label>
-                  <select
-                    name="country"
-                    value={deliveryInfo.country}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                  >
-                    <option value="United States">United States</option>
-                    <option value="Canada">Canada</option>
-                    <option value="United Kingdom">United Kingdom</option>
-                    <option value="Australia">Australia</option>
+                  <label className="block text-sm font-medium mb-1">Country</label>
+                  <select name="country" value={deliveryInfo.country} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg dark:bg-gray-800">
                     <option value="India">India</option>
                   </select>
                 </div>
-
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Street Address
-                  </label>
-                  <div className="relative">
-                    <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      type="text"
-                      name="address"
-                      value={deliveryInfo.address}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                      placeholder="123 Main Street, Apt 4B"
-                    />
-                  </div>
+                  <label className="block text-sm font-medium mb-1">Street Address</label>
+                  <input type="text" name="address" value={deliveryInfo.address} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg dark:bg-gray-800" />
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    City
-                  </label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={deliveryInfo.city}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                    placeholder="New York"
-                  />
+                  <label className="block text-sm font-medium mb-1">City</label>
+                  <input type="text" name="city" value={deliveryInfo.city} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg dark:bg-gray-800" />
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Postal Code
-                  </label>
-                  <input
-                    type="text"
-                    name="postalCode"
-                    value={deliveryInfo.postalCode}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                    placeholder="10001"
-                  />
+                  <label className="block text-sm font-medium mb-1">Postal Code</label>
+                  <input type="text" name="postalCode" value={deliveryInfo.postalCode} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg dark:bg-gray-800" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Payment Method */}
           <Card>
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-indigo-600" />
-                Payment Method
+                <CreditCard className="h-5 w-5 text-indigo-600" /> Payment Confirmation
               </h2>
-
-             {!auth?.token ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Please login to continue with payment
-                  </p>
-                  <Button
-                    onClick={() => navigate('/login', { state: '/checkout' })}
-                  >
-                    Login to Continue
-                  </Button>
-                </div>
-              ) :   cart?.length ? (
-                <div>
-                   <ReduxProvider>
-                     <ModalProvider> 
-                  <RazorPayButton amount={calculateTotal()} handleRazorPayOrderAndButton={handleRazorPayOrderAndButton} currency="INR" receipt ={`razor_receipt_${getTimeSeriesFormattedTimeKey()}  `} description =" "   onToken={ async (token )=> { 
-                    console.log("gpay token generated "+ JSON.stringify(token))
-                    onClose();
-                    
-                   }}/>
-                   </ModalProvider> 
-                   </ReduxProvider>
-                   { clientToken && cart?.length ? (
-                      <div>
-                        <PaymentContainer parentInstance={instance} parentClientToken={clientToken} parentSetInstance ={setInstance}/>
-                       {/**   <DropIn
-                          options={{
-                            authorization: clientToken,
-                            paypal: {
-                              flow: 'vault',
-                            },
-                          }}
-                          onInstance={(instance) => setInstance(instance)}
-                        />
-                        
-                        <div id="paypal-container-ZN82WD4CHVC8Y"></div>*/}
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center py-8">
-                      
-                      </div>
-                    )}
-                </div>
-              ) : (
-                <div className="flex items-center justify-center py-8">
-                 
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                </div>
-              )}
-
-            {/*  {!auth?.token ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Please login to continue with payment
-                  </p>
-                  <Button
-                    onClick={() => navigate('/login', { state: '/checkout' })}
-                  >
-                    Login to Continue
-                  </Button>
-                </div>
-              ) : clientToken && cart?.length ? (
-                <div>
-                  <DropIn
-                    options={{
-                      authorization: clientToken,
-                      paypal: {
-                        flow: 'vault',
-                      },
-                    }}
-                    onInstance={(instance) => setInstance(instance)}
+              <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isPaymentConfirmed}
+                    disabled={!isFormValid()}
+                    onChange={(e) => setIsPaymentConfirmed(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600"
                   />
-                </div>
-              ) : (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                </div>
-              )}
-
-              */}
-
-              {/* Security badges */}
-              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                 <div className="p-6">
-                        {/* PayPal Hosted Button Component */}
-                           <PayPalButtonOrderIdSingle handlePayPalOrderAndButton={handlePayPalOrderAndButton} totalAmount={calculateTotal()} />
-                          </div>
-                <div className="flex items-center justify-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-                  <div className="flex items-center gap-1">
-                    <Shield className="h-4 w-4" />
-                    Secure Payment
+                  <div className="text-sm">
+                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                      Confirm UPI & Address Details
+                    </span>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Enable QR order generation upon address validation.
+                    </p>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Truck className="h-4 w-4" />
-                    Fast Delivery
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    24/7 Support
-                  </div>
-                </div>
+                </label>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Right Column - Order Summary */}
+        {/* Right Summary Column */}
         <div className="lg:col-span-1">
           <Card className="sticky top-24">
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5 text-indigo-600" />
-                Order Summary
+                <ShoppingCart className="h-5 w-5 text-indigo-600" /> Order Summary
               </h2>
-
-              {/* Cart Items */}
-              <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
-                {cart?.map((item) => (
-                  <div key={item.id} className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {item.name}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Qty: {item.quantity || 1}
-                      </p>
-                    </div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {formatCurrency(item.price * (item.quantity || 1))}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
-                    {formatCurrency(calculateSubtotal())}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Shipping</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
-                    {calculateShipping() === 0 ? 'FREE' : formatCurrency(calculateShipping())}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Tax</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
-                    {formatCurrency(calculateTax())}
-                  </span>
-                </div>
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-2 flex justify-between">
-                  <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">Total</span>
-                  <span className="text-lg font-bold text-indigo-600">
-                    {formatCurrency(calculateTotal())}
-                  </span>
+              <div className="border-t pt-4 space-y-2">
+                <div className="flex justify-between text-sm"><span>Subtotal</span><span>{formatCurrency(calculateSubtotal())}</span></div>
+                <div className="flex justify-between text-sm"><span>Shipping</span><span>{calculateShipping() === 0 ? 'FREE' : formatCurrency(calculateShipping())}</span></div>
+                <div className="flex justify-between text-sm"><span>Tax</span><span>{formatCurrency(calculateTax())}</span></div>
+                <div className="border-t pt-2 flex justify-between font-bold text-lg">
+                  <span>Total</span><span className="text-indigo-600">{formatCurrency(calculateTotal())}</span>
                 </div>
               </div>
-
-              {/* Place Order Button */}
-              <Button
-                onClick={handleCheckout}
-                disabled={!auth?.token || !instance || loading || !cart?.length}
-                loading={loading}
-                className="w-full mt-6"
-                size="lg"
-              >
-                {loading ? 'Processing...' : `Place Order • ${formatCurrency(calculateTotal())}`}
+              <Button onClick={handlePlaceOrderClick} disabled={!isFormValid() || !isPaymentConfirmed} className="w-full mt-6" size="lg">
+                Place Order • {formatCurrency(calculateTotal())}
               </Button>
-
-              {/* Terms */}
-              <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
-                By placing your order, you agree to our Terms of Service and Privacy Policy
-              </p>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Initial Portal Modal */}
+      {isTrialGooglePayOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="bg-blue-600 p-6 text-white text-center relative">
+              <button onClick={() => setIsTrialGooglePayOpen(false)} className="absolute top-4 right-4 text-white/80 hover:text-white">✕</button>
+              <h3 className="text-lg font-semibold">Payment Portal</h3>
+              <p className="text-xs text-blue-100">Prime Computer Network</p>
+            </div>
+            <div className="p-6 text-center space-y-4">
+              <p className="text-3xl font-extrabold text-gray-900 dark:text-white">{formatCurrency(gpayamount)}</p>
+              <button onClick={handlePayWithUPI} className="w-full py-3 bg-gray-900 hover:bg-black text-white font-medium rounded-xl">
+                Pay with Any UPI App →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* QR Code Modal Popup (Matching design layout) */}
+      <AnimatePresence>
+        {showDesktopQR && (
+          <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border dark:border-gray-800"
+            >
+              {/* Close Button */}
+              <button 
+                onClick={() => setShowDesktopQR(false)}
+                className="absolute top-4 right-4 p-2 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500 hover:text-black dark:hover:text-white"
+              >
+                <X size={18} />
+              </button>
+
+              {!showUtrStep ? (
+                /* Step 1: Scan QR Code & App Selector */
+                <div className="p-6 flex flex-col items-center">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">Scan to Pay</h3>
+                  <p className="text-gray-500 text-xs sm:text-sm mb-4">Prime Computer Network</p>
+
+                  {/* App Slider / Selector */}
+                  <div className="flex items-center gap-2 mb-4 overflow-x-auto w-full justify-center py-1">
+                    {UPI_APPS.map((app) => (
+                      <button
+                        key={app.id}
+                        onClick={() => setSelectedApp(app.id)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1 ${
+                          selectedApp === app.id 
+                            ? `${app.color} text-white shadow-md scale-105` 
+                            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'
+                        }`}
+                      >
+                        {app.badge}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* QR Box */}
+                  <div className="p-4 bg-white border-2 border-slate-100 rounded-2xl shadow-inner mb-4">
+                    <QRCodeSVG 
+                      value={merchantUpiLink} 
+                      size={isMobile ? 180 : 200} 
+                      level="H" 
+                      includeMargin={true} 
+                    />
+                  </div>
+
+                  {/* Countdown Bar */}
+                  <div className="flex items-center gap-2 text-amber-600 font-mono font-bold bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 px-4 py-2 rounded-full text-xs sm:text-sm mb-3">
+                    <Clock size={16} />
+                    Expires in {formatTime(timeLeft)}
+                  </div>
+
+                  <button
+                    onClick={() => setShowUtrStep(true)}
+                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 mt-1 font-medium"
+                  >
+                    Done scanning? Submit Payment Reference <ChevronRight size={14} />
+                  </button>
+                </div>
+              ) : (
+                /* Step 2: Input UTR / Txn ID Flow */
+                <div className="p-6">
+                  <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold mb-2">
+                    <CheckCircle2 size={20} />
+                    Confirm Payment Details
+                  </div>
+                  
+                  <div className="mt-2 p-4 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <label className="block text-sm font-bold text-slate-800 dark:text-white mb-1">
+                      Enter 12-Digit UPI Ref / UTR / Txn ID
+                    </label>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                      Check your GPay, PhonePe, or Paytm debit message/history screen.
+                    </p>
+                    
+                    <input
+                      type="text"
+                      maxLength={12}
+                      placeholder="e.g. 421019827364"
+                      value={utrNumber}
+                      className="w-full px-4 py-3 font-mono text-lg tracking-wider border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                      onChange={(e) => setUtrNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                    />
+                  </div>
+
+                  <div className="mt-6 space-y-3">
+                    <Button 
+                      onClick={() => completeOrderAndRedirect(utrNumber)}
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3"
+                    >
+                      Submit Transaction Reference
+                    </Button>
+
+                    <button
+                      type="button"
+                      onClick={() => completeOrderAndRedirect()}
+                      className="w-full py-2.5 text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-medium transition-colors"
+                    >
+                      Skip for now
+                    </button>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </PageContainer>
   );
 }

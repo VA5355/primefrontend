@@ -1,5 +1,7 @@
 import React from 'react';
-
+import { useState, useEffect  } from 'react';
+//from '../../hooks/useCategory';
+ import   useIsMobile   from '../../hooks/useIsMobile';
 export default function ShopHubLogoOld({ className = "h-8 w-8", color = "currentColor" }) {
   return (
     <svg
@@ -196,6 +198,10 @@ export function ShopHubLogoWithTextOld({ className = "", size = "default" }) {
 
 export function ShopHubLogoWithText({ className = "", size = "default" }) {
   const sizes = {
+     xssmall: {
+      logo: "h-4 w-4",
+      text: "text-xs"
+    },
     small: {
       logo: "h-8 w-8",
       text: "text-xl"
@@ -209,14 +215,32 @@ export function ShopHubLogoWithText({ className = "", size = "default" }) {
       text: "text-3xl"
     }
   };
-
-  const currentSize = sizes[size] || sizes.default;
+   // CHECK MOBILE OR DESTOP
+    const isMobile = useIsMobile();
+const [ currentSize, setCurrentSize ] = useState(sizes[size] || sizes.default);
+  
+useEffect(()=>{
+  
+   let atSize =   isMobile ? sizes[ sizes.small]  :  (sizes[size] || sizes.default);
+   console.log( 'current Size ' +JSON.stringify(atSize))
+   if(atSize !==undefined){
+     setCurrentSize(atSize)
+        console.log( 'current Size  set to ' +JSON.stringify(atSize))
+   }
+   if(isMobile !==undefined && atSize ===undefined){
+     setCurrentSize(sizes[sizes.xssmall])
+      console.log( 'current Size  set to ' +JSON.stringify(sizes[sizes.xssmall]))
+   }
+   
+ 
+},[]) 
+  
 
   return (
     <div className={`flex items-center gap-2 brand-logo group cursor-pointer ${className}`} data-testid="brand-logo">
-      <ShopHubLogo className={`${currentSize.logo} logo transition-transform group-hover:rotate-12`} />
+      <ShopHubLogo className={`${currentSize ? currentSize.logo : 'h-2 w-8'} logo transition-transform group-hover:rotate-12`} />
       <div className="flex flex-col">
-        <span className={`${currentSize.text} font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 dark:from-violet-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent transition-all group-hover:scale-105`}>
+        <span className={`${currentSize ? currentSize.text : ''} font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 dark:from-violet-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent transition-all group-hover:scale-105`}>
          Prime Computer & Network
         </span>
         <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1">
