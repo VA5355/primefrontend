@@ -139,7 +139,7 @@ export default function Checkout() {
     });
     
     setShowDesktopQR(false);
-    navigate(`/customer-onboarding?${txnParams.toString()}`);
+    navigate(`/customeronboarding?${txnParams.toString()}`);
   };
 
   // UPI Link generator
