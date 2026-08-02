@@ -37,6 +37,8 @@ export default function Shop() {
         axios.get("/products"),
         axios.get("/categories")
       ]);
+      //iterate through all products check which had res.cloudinay.com photoPath
+      
       setProducts(productsRes.data);
       setFilteredProducts(productsRes.data);
       setCategories(categoriesRes.data.sort((a, b) => 

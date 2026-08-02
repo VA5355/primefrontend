@@ -79,6 +79,13 @@ export default function AdminProductUpdate ()
       setQuantity( data.quantity );
       setId( data.id );
       if (data !== undefined && data.photoPath !==undefined && data.photoPath !==null){
+  
+        if( data.photoPath.toString().toLowerCase().startsWith("https://res.cloudinary.com")){
+            setPhoto(data.photoPath.toString());
+            console.log('Cloudinary url available ')
+            setIsCreateObject(false)
+        }
+        else {
 
           // NOTE https://localhost:8000/api/uploads/products/asus-1-year-warranty-1785485875676.png  WORKS 
           // but https://crinkly-trustful-turret.ngrok-free.dev/api/uploads/products/asus-1-year-warranty-1785485875676.png  NOT WROKS 
@@ -125,6 +132,9 @@ export default function AdminProductUpdate ()
               setSlash('/');
               //setPhoto('/'+data.photoPath)
           }
+
+        }
+       
         
       }
 

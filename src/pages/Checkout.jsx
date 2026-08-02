@@ -14,13 +14,11 @@ import PageHeader from '../components/layout/PageHeader';
 import Button from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
 import { formatCurrency } from '../lib/utils';
-
-const UPI_APPS = [
-  { id: 'all', name: 'Generic UPI', color: 'bg-indigo-600', badge: 'All Apps' },
-  { id: 'gpay', name: 'Google Pay', color: 'bg-blue-600', badge: 'GPay' },
-  { id: 'paytm', name: 'Paytm', color: 'bg-sky-500', badge: 'Paytm' },
-  { id: 'phonepe', name: 'PhonePe', color: 'bg-purple-600', badge: 'PhonePe' },
-];
+ // UPI Link generator
+  const merchantUpiId = "primecomputerwakad-4@okaxis"; 
+  const merchantName = "Prime Computer Network";
+  const merchantUpiId2 = "throuvinodmalviya74@yblgh"; 
+  const merchantName2 = "Prime Computer Network";
 
 export default function Checkout() {
   const [auth] = useAuth();
@@ -50,7 +48,13 @@ export default function Checkout() {
   const [isMobile, setIsMobile] = useState(false);
   const [showUtrStep, setShowUtrStep] = useState(false);
   const [utrNumber, setUtrNumber] = useState('');
-
+  const UPI_APPS = [
+    { id: 'all', name: 'Generic UPI', color: 'bg-indigo-600', badge: 'All Apps' ,merchantUpiId: merchantUpiId, merchantUpiLink:`upi://pay?pa=${merchantUpiId}&pn=${encodeURIComponent(merchantName)}&am=${gpayamount}&cu=INR` },
+    { id: 'gpay', name: 'Google Pay', color: 'bg-blue-600', badge: 'GPay',merchantUpiId: merchantUpiId, merchantUpiLink:`upi://pay?pa=${merchantUpiId}&pn=${encodeURIComponent(merchantName)}&am=${gpayamount}&cu=INR` },
+    { id: 'paytm', name: 'Paytm', color: 'bg-sky-500', badge: 'Paytm' ,merchantUpiId: merchantUpiId, merchantUpiLink:`upi://pay?pa=${merchantUpiId}&pn=${encodeURIComponent(merchantName)}&am=${gpayamount}&cu=INR` },
+    { id: 'phonepe', name: 'PhonePe', color: 'bg-purple-600', badge: 'PhonePe',merchantUpiId: merchantUpiId2, merchantUpiLink:`upi://pay?pa=${merchantUpiId2}&pn=${encodeURIComponent(merchantName)}&am=${gpayamount}&cu=INR` },
+  ];
+  const qrDimensions = isMobile ? 180 : 200;
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
     checkMobile();
@@ -142,9 +146,7 @@ export default function Checkout() {
     navigate(`/customeronboarding?${txnParams.toString()}`);
   };
 
-  // UPI Link generator
-  const merchantUpiId = "primecomputernetwork@upi"; 
-  const merchantName = "Prime Computer Network";
+ 
   const merchantUpiLink = `upi://pay?pa=${merchantUpiId}&pn=${encodeURIComponent(merchantName)}&am=${gpayamount}&cu=INR`;
 
   return (
@@ -313,14 +315,57 @@ export default function Checkout() {
                   </div>
 
                   {/* QR Box */}
-                  <div className="p-4 bg-white border-2 border-slate-100 rounded-2xl shadow-inner mb-4">
+                  {/** OLD CODE  */}
+                 {/*  <div className="p-4 bg-white border-2 border-slate-100 rounded-2xl shadow-inner mb-4">
+                       {UPI_APPS.map((app) => (
                     <QRCodeSVG 
-                      value={merchantUpiLink} 
+                      value={app.merchantUpiLink} 
                       size={isMobile ? 180 : 200} 
                       level="H" 
                       includeMargin={true} 
                     />
+                       ))}
                   </div>
+                  */}
+                  {/* QR Box Overlay Stack */}
+                    <div className="p-4 bg-white border-2 border-slate-100 rounded-2xl shadow-inner mb-4 flex items-center justify-center">
+                      <div 
+                        className="relative flex items-center justify-center"
+                        style={{ width: qrDimensions, height: qrDimensions }}
+                      >
+                        {UPI_APPS.map((app) => {
+                          const isSelected = selectedApp === app.id;
+                          return (
+                            <motion.div
+                              key={app.id}
+                              initial={false}
+                              animate={{
+                                opacity: isSelected ? 1 : 0,
+                                scale: isSelected ? 1 : 0.95,
+                                zIndex: isSelected ? 10 : 0,
+                              }}
+                              transition={{ duration: 0.25, ease: 'easeInOut' }}
+                              className="absolute inset-0 flex items-center justify-center bg-white rounded-xl"
+                              style={{
+                                pointerEvents: isSelected ? 'auto' : 'none',
+                              }}
+                            >
+                              <QRCodeSVG
+                                value={app.merchantUpiLink}
+                                size={qrDimensions}
+                                level="H"
+                                includeMargin={true}
+                              />
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+
+
+
+
 
                   {/* Countdown Bar */}
                   <div className="flex items-center gap-2 text-amber-600 font-mono font-bold bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 px-4 py-2 rounded-full text-xs sm:text-sm mb-3">

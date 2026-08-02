@@ -15,6 +15,7 @@ export default function ProductCard({ p: product, viewMode }) {
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [slash , setSlash] = useState('');
+  const [isPhotoCloudinary , setIsPhotoCloudinary ] = useState(false);
   const stock = calculateStock(product.quantity, product.sold);
   const inStock = isInStock(product.quantity, product.sold);
   const isPopular = product.sold > 10;
@@ -25,20 +26,29 @@ export default function ProductCard({ p: product, viewMode }) {
       // if not append a /
       if (product !== undefined && product.photoPath !==undefined && product.photoPath !==null){
           let imgPath = product.photoPath.toString();
-             let photoFirstChar  =  imgPath.slice(0,1);
-             let isForwardSlash = photoFirstChar==='/' ? true : false;
-          console.log(' photoPath contains forwardslash '+isForwardSlash );
-          if(isForwardSlash)
-          {
-             console.log(' photoPath no forwardslash  required '+isForwardSlash );
-                setSlash('');
-          }else {
-              console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
-              setSlash('/');
+        if(imgPath.toLowerCase().startsWith("https://res.cloudinary.com")){
+                  //  setPhoto(data.photoPath.toString());
+                    console.log('Cloudinary url available ');
+              console.log(' Cloudinary url  '+imgPath );         
+                    setIsPhotoCloudinary(true)
+                    //setIsCreateObject(false)
           }
-        
-      }
+        else {
 
+              let photoFirstChar  =  imgPath.slice(0,1);
+              let isForwardSlash = photoFirstChar==='/' ? true : false;
+            console.log(' photoPath contains forwardslash '+isForwardSlash );
+            if(isForwardSlash)
+            {
+              console.log(' photoPath no forwardslash  required '+isForwardSlash );
+                  setSlash('');
+            }else {
+                console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+                setSlash('/');
+            }
+          
+        }
+    }
 
   },[])
 
@@ -96,7 +106,7 @@ export default function ProductCard({ p: product, viewMode }) {
         
         {!imageError && product.photoPath ? (
           <img
-            src={`${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}`}
+            src={product.photoPath && isPhotoCloudinary ?  product.photoPath : (product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}` : '/placeholder.png')}
             alt={product.name}
             onLoad={() => setImageLoading(false)}
             onError={() => {
