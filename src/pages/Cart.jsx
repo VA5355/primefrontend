@@ -60,8 +60,19 @@ export default function Cart() {
     toast.success('Cart cleared');
   };
   const applySlash = (item) => {
-                if (item !== undefined && item.photoPath !==undefined && item.photoPath !==null){
+   if (item !== undefined && item.photoPath !==undefined && item.photoPath !==null){
           let imgPath = item.photoPath.toString();
+    if(imgPath.toLowerCase().startsWith("https://res.cloudinary.com")){
+
+              //  setPhoto(data.photoPath.toString());
+                    console.log('Cloudinary url available ');
+              console.log(' Cloudinary url  '+imgPath );   
+              
+              return imgPath;
+                 //   setIsPhotoCloudinary(true)
+                    //setIsCreateObject(false)
+          }
+     else{ 
              let photoFirstChar  =  imgPath.slice(0,1);
              let isForwardSlash = photoFirstChar==='/' ? true : false;
           console.log(' photoPath contains forwardslash '+isForwardSlash );
@@ -69,14 +80,17 @@ export default function Cart() {
           {
              console.log(' photoPath no forwardslash  required '+isForwardSlash );
              //   setSlash('');
-             return '';
+             return process.env.REACT_APP_API_PHOTOS+imgPath;
           }else {
               console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
             //  setSlash('/');
-            return '/';
+            return process.env.REACT_APP_API_PHOTOS+'/'+imgPath;
           }
-        
+        }
       }
+    else {
+      return '/placeholder.png'
+    }
   }
   const applyPromoCode = () => {
     setIsApplyingPromo(true);
@@ -183,8 +197,9 @@ export default function Cart() {
                       {/* Product Image */}
                       <Link to={`/product/${item.slug}`}>
                         <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                          {/** item.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${applySlash(item)}${item.photoPath}` : '/placeholder.png' */}
                           <img
-                            src={item.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${applySlash(item)}${item.photoPath}` : '/placeholder.png'}
+                            src={ applySlash(item) }
                             alt={item.name}
                             className="w-full h-full object-cover hover:scale-105 transition-transform"
                           />

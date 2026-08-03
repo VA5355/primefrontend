@@ -21,16 +21,17 @@ export default function ProductCard({ p: product, viewMode }) {
   const isPopular = product.sold > 10;
   const isNew = new Date(product.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-  useEffect(()=>{
-      // check the product photoPath begins with / 
-      // if not append a /
-      if (product !== undefined && product.photoPath !==undefined && product.photoPath !==null){
-          let imgPath = product.photoPath.toString();
+const  getProductPath =  (p) => {
+      if(p !==undefined && p.photoPath !==undefined && p.photoPath !==null){
+         let imgPath = p.photoPath.toString();
+         //product.photoPath && isPhotoCloudinary ?  product.photoPath : (product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}` : '/placeholder.png'
         if(imgPath.toLowerCase().startsWith("https://res.cloudinary.com")){
                   //  setPhoto(data.photoPath.toString());
                     console.log('Cloudinary url available ');
-              console.log(' Cloudinary url  '+imgPath );         
-                    setIsPhotoCloudinary(true)
+              console.log(' Cloudinary url  '+imgPath );   
+              
+              return imgPath;
+                 //   setIsPhotoCloudinary(true)
                     //setIsCreateObject(false)
           }
         else {
@@ -42,15 +43,50 @@ export default function ProductCard({ p: product, viewMode }) {
             {
               console.log(' photoPath no forwardslash  required '+isForwardSlash );
                   setSlash('');
+              return process.env.REACT_APP_API_PHOTOS+imgPath;
             }else {
                 console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
                 setSlash('/');
+                return process.env.REACT_APP_API_PHOTOS+'/'+imgPath;
             }
           
         }
+      }
+       else {
+      return '/placeholder.png'
+    }
+  }
+  /*
+  useEffect(()=>{
+      // check the product photoPath begins with / 
+      // if not append a /
+      if (product !== undefined && product.photoPath !==undefined && product.photoPath !==null){
+        //   let imgPath = product.photoPath.toString();
+        // if(imgPath.toLowerCase().startsWith("https://res.cloudinary.com")){
+        //           //  setPhoto(data.photoPath.toString());
+        //             console.log('Cloudinary url available ');
+        //       console.log(' Cloudinary url  '+imgPath );         
+        //             setIsPhotoCloudinary(true)
+        //             //setIsCreateObject(false)
+        //   }
+        // else {
+
+        //       let photoFirstChar  =  imgPath.slice(0,1);
+        //       let isForwardSlash = photoFirstChar==='/' ? true : false;
+        //     console.log(' photoPath contains forwardslash '+isForwardSlash );
+        //     if(isForwardSlash)
+        //     {
+        //       console.log(' photoPath no forwardslash  required '+isForwardSlash );
+        //           setSlash('');
+        //     }else {
+        //         console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+        //         setSlash('/');
+        //     }
+          
+        // }
     }
 
-  },[])
+  },[]) */
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
@@ -103,10 +139,10 @@ export default function ProductCard({ p: product, viewMode }) {
         {imageLoading && (
           <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse" />
         )}
-        
+        {/** product.photoPath && isPhotoCloudinary ?  product.photoPath : (product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}` : '/placeholder.png') */}
         {!imageError && product.photoPath ? (
           <img
-            src={product.photoPath && isPhotoCloudinary ?  product.photoPath : (product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}` : '/placeholder.png')}
+            src={product.photoPath}
             alt={product.name}
             onLoad={() => setImageLoading(false)}
             onError={() => {

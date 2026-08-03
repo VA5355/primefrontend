@@ -15,6 +15,42 @@ export default function ProductCardHorizontal ( { p, remove = true } )
     setCart( myCart );
     localStorage.setItem( 'cart', JSON.stringify( myCart ) );
   };
+
+ const  getProductPath =  (product) => {
+      if(product !==undefined && product.photoPath !==undefined && product.photoPath !==null){
+         let imgPath = product.photoPath.toString();
+         //product.photoPath && isPhotoCloudinary ?  product.photoPath : (product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}` : '/placeholder.png'
+        if(imgPath.toLowerCase().startsWith("https://res.cloudinary.com")){
+                  //  setPhoto(data.photoPath.toString());
+                    console.log('Cloudinary url available ');
+              console.log(' Cloudinary url  '+imgPath );   
+              
+              return imgPath;
+                 //   setIsPhotoCloudinary(true)
+                    //setIsCreateObject(false)
+          }
+        else {
+
+              let photoFirstChar  =  imgPath.slice(0,1);
+              let isForwardSlash = photoFirstChar==='/' ? true : false;
+            console.log(' photoPath contains forwardslash '+isForwardSlash );
+            if(isForwardSlash)
+            {
+              console.log(' photoPath no forwardslash  required '+isForwardSlash );
+                  setSlash('');
+              return process.env.REACT_APP_API_PHOTOS+imgPath;
+            }else {
+                console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+                setSlash('/');
+                return process.env.REACT_APP_API_PHOTOS+'/'+imgPath;
+            }
+          
+        }
+      }
+       else {
+      return '/placeholder.png'
+    }
+  }
  useEffect(()=>{
       // check the product photoPath begins with / 
       // if not append a /
@@ -41,8 +77,9 @@ export default function ProductCardHorizontal ( { p, remove = true } )
     <div className='rounded-lg shadow-md mb-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden'>
       <div className='flex'>
         <div className='w-1/3 md:w-1/4'>
+          {/** p.photoPath ? `${ process.env.REACT_APP_API_PHOTOS }${slash}${ p.photoPath }` : '/placeholder.png'  */}
           <img
-            src={ p.photoPath ? `${ process.env.REACT_APP_API_PHOTOS }${slash}${ p.photoPath }` : '/placeholder.png' }
+            src={getProductPath(p) }
             alt={ p.name }
             className='w-full h-36 object-cover'
           />

@@ -21,6 +21,8 @@ export default function AdminProducts ()
 
   //state
   const [ products, setProducts ] = useState( [] );
+    const [slash , setSlash] = useState('');
+    const [isPhotoCloudinary , setIsPhotoCloudinary ] = useState(false);
   const [ searchTerm, setSearchTerm ] = useState( '' );
   const [ filteredProducts, setFilteredProducts ] = useState( [] );
 
@@ -41,7 +43,41 @@ export default function AdminProducts ()
       console.log( error );
     }
   };
+  const getProductPath = (product) => {
+      if(product !==undefined && product.photoPath !==undefined && product.photoPath !==null){
+         let imgPath = product.photoPath.toString();
+         //product.photoPath && isPhotoCloudinary ?  product.photoPath : (product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}` : '/placeholder.png'
+        if(imgPath.toLowerCase().startsWith("https://res.cloudinary.com")){
+                  //  setPhoto(data.photoPath.toString());
+                    console.log('Cloudinary url available ');
+              console.log(' Cloudinary url  '+imgPath );   
+              
+              return imgPath;
+                 //   setIsPhotoCloudinary(true)
+                    //setIsCreateObject(false)
+          }
+        else {
 
+              let photoFirstChar  =  imgPath.slice(0,1);
+              let isForwardSlash = photoFirstChar==='/' ? true : false;
+            console.log(' photoPath contains forwardslash '+isForwardSlash );
+            if(isForwardSlash)
+            {
+              console.log(' photoPath no forwardslash  required '+isForwardSlash );
+                  setSlash('');
+              return process.env.REACT_APP_API_PHOTOS+imgPath;
+            }else {
+                console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+                setSlash('/');
+                return process.env.REACT_APP_API_PHOTOS+'/'+imgPath;
+            }
+          
+        }
+      }
+       else {
+      return '/placeholder.png'
+    }
+  }
   // Search functionality
   useEffect(() => {
     if (!searchTerm) {
@@ -148,8 +184,9 @@ export default function AdminProducts ()
                               {/* Product Image */}
                               <div className="md:col-span-1">
                                 <div className="relative h-48 md:h-full overflow-hidden rounded-l-lg">
+                                  {/*product?.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${product.photoPath}` : '/placeholder.png' */}
                                   <img
-                                    src={product?.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${product.photoPath}` : '/placeholder.png'}
+                                    src={getProductPath()}
                                     alt={product.name}
                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                   />

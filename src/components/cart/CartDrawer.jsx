@@ -59,8 +59,19 @@ export default function CartDrawer({ isOpen, onClose }) {
     navigate('/cart');
   };
 const applySlash = (item) => {
-                if (item !== undefined && item.photoPath !==undefined && item.photoPath !==null){
+    if (item !== undefined && item.photoPath !==undefined && item.photoPath !==null){
           let imgPath = item.photoPath.toString();
+       if(imgPath.toLowerCase().startsWith("https://res.cloudinary.com")){
+                  //  setPhoto(data.photoPath.toString());
+                    console.log('Cloudinary url available ');
+              console.log(' Cloudinary url  '+imgPath );   
+              
+              return imgPath;
+                 //   setIsPhotoCloudinary(true)
+                    //setIsCreateObject(false)
+          }
+        else {
+
              let photoFirstChar  =  imgPath.slice(0,1);
              let isForwardSlash = photoFirstChar==='/' ? true : false;
           console.log(' photoPath contains forwardslash '+isForwardSlash );
@@ -74,8 +85,11 @@ const applySlash = (item) => {
             //  setSlash('/');
             return '/';
           }
-        
+        }
       }
+     else {
+      return '/placeholder.png'
+    }
   }
   const freeShippingThreshold = 100;
   const cartTotal = getCartTotal();
@@ -166,9 +180,9 @@ const applySlash = (item) => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, x: -100 }}
                         className="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                      >
+                      > {/** item.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${applySlash(item)}${item.photoPath}` : '/placeholder.png' */}
                         <img
-                          src={item.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${applySlash(item)}${item.photoPath}` : '/placeholder.png'}
+                          src={applySlash(item)}
                           alt={item.name}
                           className="w-20 h-20 object-cover rounded-md"
                         />

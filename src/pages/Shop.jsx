@@ -38,9 +38,47 @@ export default function Shop() {
         axios.get("/categories")
       ]);
       //iterate through all products check which had res.cloudinay.com photoPath
-      
-      setProducts(productsRes.data);
-      setFilteredProducts(productsRes.data);
+      let productsPhotoPathUpdate =   productsRes.data.map(p => { 
+          if(p !==undefined && p.photoPath !==undefined && p.photoPath !==null){
+         let imgPath = p.photoPath.toString();
+         //product.photoPath && isPhotoCloudinary ?  product.photoPath : (product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}` : '/placeholder.png'
+        if(imgPath.toLowerCase().startsWith("https://res.cloudinary.com")){
+                  //  setPhoto(data.photoPath.toString());
+                    console.log('Cloudinary url available ');
+              console.log(' Cloudinary url  '+imgPath );   
+              
+              p.photoPath = imgPath;
+                 //   setIsPhotoCloudinary(true)
+                    //setIsCreateObject(false)
+          }
+        else {
+
+              let photoFirstChar  =  imgPath.slice(0,1);
+              let isForwardSlash = photoFirstChar==='/' ? true : false;
+            console.log(' photoPath contains forwardslash '+isForwardSlash );
+            if(isForwardSlash)
+            {
+              console.log(' photoPath no forwardslash  required '+isForwardSlash );
+                //  setSlash('');
+             // return process.env.REACT_APP_API_PHOTOS+imgPath;
+                p.photoPath = process.env.REACT_APP_API_PHOTOS+imgPath;
+            }else {
+                console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+             //   setSlash('/');
+             //   return process.env.REACT_APP_API_PHOTOS+'/'+imgPath;
+                p.photoPath =  process.env.REACT_APP_API_PHOTOS+'/'+imgPath;
+            }
+          
+        }
+      }
+       else {
+            p.photoPath = 
+              '/placeholder.png'
+        }
+        return p;
+      })
+      setProducts(productsPhotoPathUpdate);
+      setFilteredProducts(productsPhotoPathUpdate);
       setCategories(categoriesRes.data.sort((a, b) => 
         a.name.toLowerCase().localeCompare(b.name.toLowerCase())
       ));
