@@ -7,6 +7,9 @@ import Menu from './components/nav/Menu.jsx';
 import CartDrawer from './components/cart/CartDrawer.jsx';
 import Footer from './components/layout/Footer.jsx';
 import { useCartDrawer } from './context/cartDrawer';
+import {ReduxProvider} from './providers/ReduxProvider'
+import { ModalProvider } from './providers/ModalProvider';
+import NotFound from './pages/NotFound';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
 import ProductView from './pages/ProductView';
@@ -16,7 +19,9 @@ import CategoryView from './pages/CategoryView';
 import Collections from './pages/Collections';
 import CollectionView from './pages/CollectionView';
 import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
+//import Checkout from './pages/Checkout';
+//import Checkout from './pages/Checkout-withBharatPe.jsx';
+import Checkout from './pages/Checkout-withBharatPeModal';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
@@ -66,7 +71,7 @@ function AppContent() {
           <Route path='/collections' element={ <Collections /> } />
           <Route path='/collections/:slug' element={ <CollectionView /> } />
           <Route path='/cart' element={ <Cart /> } />
-          <Route path='/checkout' element={ <Checkout /> } />
+          <Route path='/checkout' element={ <ReduxProvider>  <ModalProvider>  <Checkout /> </ModalProvider>  </ReduxProvider> } />
           <Route path='/search' element={ <Search /> } />
           <Route path='/product/:slug' element={ <ProductView /> } />
           <Route path='/login' element={ <Login /> } />
@@ -75,7 +80,11 @@ function AppContent() {
           <Route path='/reset-password' element={ <ResetPassword /> } />
           <Route path='/braintree-rediect' element={ <BraintreeCallback /> } />
           <Route path='/customeronboarding' element={ <CustomerOnboarding /> } />
-
+        {/* Under Construction / Coming Soon Routes */}
+          <Route path="/shipping" element={<NotFound />} />
+          <Route path="/contact" element={<NotFound />} />
+          <Route path="/returns" element={<NotFound />} />
+          <Route path="/support" element={<NotFound />} />
           <Route path='/dashboard' element={ <UserRoute /> } >
             <Route path='user' element={ <UserDashboard /> } />
             <Route path='user/profile' element={ <UserProfile /> } />
@@ -85,7 +94,7 @@ function AppContent() {
           <Route path='/dashboard' element={ <AdminRoute /> } >
             <Route path='admin' element={ <AdminDashboard /> } />
             <Route path='admin/category' element={ <AdminCategory /> } />
-            <Route path='admin/product' element={ <AdminProduct /> } />
+            <Route path='admin/product' element={  <ReduxProvider>  <ModalProvider>   <AdminProduct /></ModalProvider>  </ReduxProvider> } />
             <Route path='admin/products' element={ <AdminProducts /> } />
             <Route
               path="admin/product/update/:slug"

@@ -13,10 +13,6 @@ import PersonalizedSection from '../components/home/PersonalizedSection';
 import FeaturedCollections from '../components/home/FeaturedCollections';
 import SocialFeed from '../components/home/SocialFeed';
 import NewsletterSignup from '../components/home/NewsletterSignup';
-// Import the LocationMapSection component
-import LocationMapSection from './LocationMapSection';
-import LocationMapSectionEmbedUrl from './LocationMapSection-EmbedUrl';
-import LocationMapSectionDetailed from './LocationMapSectionDetailed';
 
 export default function Home() {
   usePageTitle('Home');
@@ -144,45 +140,45 @@ export default function Home() {
       <section className="py-16 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="mb-12"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <TrendingUp className="h-8 w-8 text-primary" />
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Best Sellers</h2>
-              </div>
-              <Button
-                onClick={() => navigate('/shop?sort=best-selling')}
-                variant="ghost"
-                size="sm"
-              >
-                View All
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="mb-12"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <TrendingUp className="h-8 w-8 text-primary" />
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Best Sellers</h2>
             </div>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {initialLoading ? (
-              <SkeletonProductGrid count={6} />
-            ) : (
-              productSortedBySold?.slice(0, 6).map((p, index) => (
-                <motion.div
-                  key={p.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
-                >
-                  <ProductCard p={p} />
-                </motion.div>
-              ))
-            )}
+            <Button
+              onClick={() => navigate('/shop?sort=best-selling')}
+              variant="ghost"
+              size="sm"
+            >
+              View All
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
           </div>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {initialLoading ? (
+            <SkeletonProductGrid count={6} />
+          ) : (
+            productSortedBySold?.slice(0, 6).map((p, index) => (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+              >
+                <ProductCard p={p} />
+              </motion.div>
+            ))
+          )}
+        </div>
 
           {/* Load More */}
           {products && products.length < total && (
@@ -209,9 +205,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Prime Computer Network Location Map */}
-      <LocationMapSectionDetailed />
-
       {/* Newsletter Signup */}
       <NewsletterSignup />
 
@@ -222,17 +215,17 @@ export default function Home() {
             {[
               {
                 title: "Free Shipping",
-                description: "On orders over ₹1,000",
+                description: "On orders over $100",
                 icon: "🚚"
               },
               {
                 title: "24/7 Support",
-                description: "Dedicated IT & customer service",
+                description: "Dedicated customer service",
                 icon: "💬"
               },
               {
                 title: "Secure Payment",
-                description: "100% secure UPI & Card transactions",
+                description: "100% secure transactions",
                 icon: "🔒"
               }
             ].map((feature, index) => (

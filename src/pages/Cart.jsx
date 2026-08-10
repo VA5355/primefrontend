@@ -38,7 +38,8 @@ export default function Cart() {
           newQuantity--;
         }
         
-        return { ...item, cartQuantity: newQuantity };
+       // return { ...item, cartQuantity: newQuantity };
+        return { ...item, quantity: newQuantity , cartQuantity: newQuantity};
       }
       return item;
     });

@@ -71,20 +71,26 @@ const applySlash = (item) => {
                     //setIsCreateObject(false)
           }
         else {
-
+            if (imgPath.toLowerCase().startsWith("https://localhost:8000")){
+                            console.log('localhost:8000 url available ');
+              console.log(' localhost:8000 url  '+imgPath );  
+                 return imgPath; 
+          }
+          else { 
              let photoFirstChar  =  imgPath.slice(0,1);
              let isForwardSlash = photoFirstChar==='/' ? true : false;
-          console.log(' photoPath contains forwardslash '+isForwardSlash );
-          if(isForwardSlash)
-          {
-             console.log(' photoPath no forwardslash  required '+isForwardSlash );
-             //   setSlash('');
-             return '';
-          }else {
-              console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
-            //  setSlash('/');
-            return '/';
-          }
+              console.log(' photoPath contains forwardslash '+isForwardSlash );
+              if(isForwardSlash)
+              {
+                console.log(' photoPath no forwardslash  required '+isForwardSlash );
+                //   setSlash('');
+                return process.env.REACT_APP_API_PHOTOS+imgPath;
+              }else {
+                  console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+                //  setSlash('/');
+                return  process.env.REACT_APP_API_PHOTOS+'/'+imgPath;
+              }
+            }
         }
       }
      else {

@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
  
 import paymentSlice,{  RazorPaymentSliceProps } from './slices/paymentSlice';
+import paymentBharatPeSlice,{  BharatPePaymentSliceProps } from './slices/paymentBharatPeSlice';
 import {    ModalSliceProps } from '../components/common/service/ModalService';
 import   modelSlice      from '../components/common/service/ModalService';
 
@@ -9,10 +10,12 @@ import modalGenReducer from './slices/modalGenSlice';
 import loadingReducer from './slices/loadingSlice';
  
 import paymentReducer  from './slices/paymentSlice';
+import paymentBhartPeReducer  from './slices/paymentBharatPeSlice';
 
 export interface GlobalState {
  
      razorpayment: RazorPaymentSliceProps,
+     bhartpepayment: BharatPePaymentSliceProps,
      modalpayload: ModalSliceProps
 }
 const modalMiddleware = createModalMiddleware({
@@ -29,7 +32,8 @@ export const store = configureStore({
          modalpop : modalGenReducer,
          loader: loadingReducer,
        
-         razorpay:paymentReducer
+         razorpay:paymentReducer,
+        bharatpe:paymentBhartPeReducer
 
 	},
         middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(modalMiddleware),

@@ -1,7 +1,10 @@
 /* eslint-disable jsx-a11y/img-redundant-alt */
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from '../../context/auth';
+import { useDispatch, useSelector } from "react-redux";
+import { showModal as modalShow, showError } from '../../components/common/service/ModalService';
+ import { useModal } from '../../providers/ModalProvider';
 import { PageContainer, PageHeader } from '../../components/ui/PageContainer';
 import AdminMenu from '../../components/nav/AdminMenu';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
@@ -12,13 +15,34 @@ import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { Upload, Package2, IndianRupee, Hash, Truck, Image as ImageIcon } from 'lucide-react';
 import usePageTitle from '../../hooks/usePageTitle';
+const backdropStyle = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(0, 0, 0, 0.5)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 1000,
+};
 
+const modalStyle = {
+  background: "#fff",
+  padding: "20px",
+  borderRadius: "8px",
+  width: "300px",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+};
 export default function AdminProduct ()
 {
   usePageTitle('Create Product');
+    const dispatch = useDispatch();
   //context
   const [ auth, setAuth ] = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
 
+  // Programmatic trigger handlers
+  const openModal = () => setIsOpen(true);
+  const closeModal = () => setIsOpen(false);
   //state
   const [ categories, setCategories ] = useState( [] );
   const [ photo, setPhoto ] = useState( "" );
@@ -28,7 +52,7 @@ export default function AdminProduct ()
   const [ category, setCategory ] = useState( "" );
   const [ shipping, setShipping ] = useState( "" );
   const [ quantity, setQuantity ] = useState( "" );
-
+ const { showFramerModal, hideModal } = useModal();
   //hook
   const navigate = useNavigate();
 
@@ -82,34 +106,70 @@ const fileToBase64 = (file )  => {
       productData.append( 'category', category );
       productData.append( 'shipping', shipping );
       productData.append( 'quantity', quantity );
+    if(photo !== undefined &&  photo !== null &&   photo !== '' && 
+       name !==undefined && name !== null &&   name !== '' && 
+      price !== undefined && price !== null &&   price !== '' && 
+      description !== undefined &&  description !== null &&   description !== '' && 
+       category !== undefined &&  category !== null &&   category !== '' && 
+       shipping !== undefined && shipping !== null &&   shipping !== '' && 
+       quantity !== undefined &&   quantity !== null &&   quantity !== '' 
+    ) { 
+           // Send standard JSON payload with Base64 string
+          const payload = {
+            name,
+            description,
+            price,
+            category,
+            shipping,
+            quantity,
+            photoData: photoBase64, // Base64 string standard format: "data:image/png;base64,iVBOR..."
+            photoContentType: photo?.type || ''
+          };
 
-      // Send standard JSON payload with Base64 string
-      const payload = {
-        name,
-        description,
-        price,
-        category,
-        shipping,
-        quantity,
-        photoData: photoBase64, // Base64 string standard format: "data:image/png;base64,iVBOR..."
-        photoContentType: photo?.type || ''
-      };
+        // const { data } = await axios.post('/product-as-json/create', payload);
 
-     // const { data } = await axios.post('/product-as-json/create', payload);
+  
 
+          console.log( [ ...productData ] ); 
+            let productToCreate = { show: true, modalType : "productOrder" , ...payload}
+            dispatch(modalShow({title: 'Create Product', message: "Processing product creation", payload : productToCreate} ));
+            /*  showFramerModal({ 
+                              status: 'loading', 
+                              message: ` Creating Product... ` 
+                              }); 
+                            spinnerIsAvailable = true; */
+        
+        const { data } = await axios.post( `/product/create`, productData );
+        /*  (spinnerIsAvailable ?   setTimeout( () => { hideModal() 
+                                                  spinnerIsAvailable =false;
+                                              } , 1000): console.log("Spinner unavailavle to close ") ) ; 
+          */
+          if ( data?.error )
+          {
+            toast.error( data.error );
 
-       console.log( [ ...productData ] ); 
+          }
+          else
+          {
+            toast.success( ` "${ data.name }" is created ` );
+            navigate( '/dashboard/admin/products' );
+          }
 
-    const { data } = await axios.post( `/product/create`, productData );
-      if ( data?.error )
-      {
-        toast.error( data.error );
-      }
-      else
-      {
-        toast.success( ` "${ data.name }" is created ` );
-        navigate( '/dashboard/admin/products' );
-      }
+    }
+     else {
+      let payload = {} ;
+       let productToCreate = { show: true, modalType : "productOrder" , ...payload}
+       openModal();
+      //  dispatch(modalShow({title: 'Create Product', message: "Product validation failed ", payload : productToCreate} ));
+          /*   showFramerModal({ 
+                              status: 'loading', 
+                              message: `Product Validation failed please fill all details ` 
+                              }); 
+                            spinnerIsAvailable = true; 
+           (spinnerIsAvailable ?   setTimeout( () => { hideModal() 
+                                                  spinnerIsAvailable =false;
+                                              } , 1000): console.log("Spinner unavailavle to close ") ) ; */
+     }
 
     } catch ( err )
     {
@@ -353,6 +413,24 @@ const fileToBase64 = (file )  => {
               </Card>
             </motion.div>
           </div>
+            <AnimatePresence>
+        {isOpen && (
+          <div style={backdropStyle} onClick={closeModal}>
+            <motion.div
+              style={modalStyle}
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+            >
+              <h3>Product Validation Error</h3>
+              <p>Enter all details .</p>
+              <button onClick={closeModal}>Close</button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
         </div>
       </div>
     </PageContainer>

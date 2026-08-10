@@ -86,55 +86,60 @@ export default function AdminProductUpdate ()
             setIsCreateObject(false)
         }
         else {
-
-          // NOTE https://localhost:8000/api/uploads/products/asus-1-year-warranty-1785485875676.png  WORKS 
-          // but https://crinkly-trustful-turret.ngrok-free.dev/api/uploads/products/asus-1-year-warranty-1785485875676.png  NOT WROKS 
-        //setPhoto(data.photoPath);
-        //photoContentType = photo.type;
-        let photoUrl = '';//await fileToBase64(data.photoPath);
-        console.log('Product Photo path in the DB  '+data.photoPath)
-         let baseHost = 
-          ( window.location.hostname === `${process.env.REACT_APP_NGROKLOCALHOST}` ||   window.location.hostname === 'localhost')
-               ?  `localhost:8000`
-                :  'primebackend-sz0b.onrender.com' ; // `${process.env.REACT_APP_RAZORORDERANDPAYMENTURL}`;
-
-           let baseUrl = window.location.protocol + "//" + baseHost; 
-           let urlForPhotos = baseUrl + '/api'+data.photoPath
-           try {   
-
-             photoUrl =   URL.createObjectURL(urlForPhotos)//new  URL(urlForPhotos);
-           }catch(errr){
-            console.log("No need to createObjectURL ")
-              setIsCreateObject(false)
-           }
-       
-        console.log('Product Photo URL '+ photoUrl)
-        if(photoUrl !== undefined){
-          let baseUrl = window.location.protocol + "//" + window.location.host;   // window.location.origin ; //window.location.href;
-          
-          console.log('Base  URL '+ baseUrl)
-          //console.log('aCTUAL PRODUCT PHOTO  URL '+ baseUrl+data.photoPath);
-          console.log('aCTUAL PRODUCT PHOTO  URL '+ urlForPhotos);
-            setPhoto(urlForPhotos)
-        }
-        // need to check the above setPhoto works or you have to setPhoto(slash+data.photoPath)
-          let imgPath = data.photoPath.toString();
-             let photoFirstChar  =  imgPath.slice(0,1);
-             let isForwardSlash = photoFirstChar==='/' ? true : false;
-          console.log('AdminProductUpdate JSX loadProduct ::  photoPath contains forwardslash '+isForwardSlash );
-          if(isForwardSlash)
-          {
-             console.log(' photoPath no forwardslash  required '+isForwardSlash );
-                setSlash('');
-               // setPhoto(data.photoPath)
-          }else {
-              console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
-              setSlash('/');
-              //setPhoto('/'+data.photoPath)
+          if (data.photoPath.toLowerCase().startsWith("https://localhost:8000")){
+                            console.log('localhost:8000 url available ');
+              console.log(' localhost:8000 url  '+data.photoPath.toString() );  
+                 return data.photoPath.toString(); 
           }
+          else { 
+                    // NOTE https://localhost:8000/api/uploads/products/asus-1-year-warranty-1785485875676.png  WORKS 
+                // but https://crinkly-trustful-turret.ngrok-free.dev/api/uploads/products/asus-1-year-warranty-1785485875676.png  NOT WROKS 
+              //setPhoto(data.photoPath);
+              //photoContentType = photo.type;
+              let photoUrl = '';//await fileToBase64(data.photoPath);
+              console.log('Product Photo path in the DB  '+data.photoPath)
+              let baseHost = 
+                ( window.location.hostname === `${process.env.REACT_APP_NGROKLOCALHOST}` ||   window.location.hostname === 'localhost')
+                    ?  `localhost:8000`
+                      :  'primebackend-sz0b.onrender.com' ; // `${process.env.REACT_APP_RAZORORDERANDPAYMENTURL}`;
 
-        }
-       
+                let baseUrl = window.location.protocol + "//" + baseHost; 
+                let urlForPhotos = baseUrl + '/api'+data.photoPath
+                try {   
+
+                  photoUrl =   URL.createObjectURL(urlForPhotos)//new  URL(urlForPhotos);
+                }catch(errr){
+                  console.log("No need to createObjectURL ")
+                    setIsCreateObject(false)
+                }
+            
+              console.log('Product Photo URL '+ photoUrl)
+              if(photoUrl !== undefined){
+                let baseUrl = window.location.protocol + "//" + window.location.host;   // window.location.origin ; //window.location.href;
+                
+                console.log('Base  URL '+ baseUrl)
+                //console.log('aCTUAL PRODUCT PHOTO  URL '+ baseUrl+data.photoPath);
+                console.log('aCTUAL PRODUCT PHOTO  URL '+ urlForPhotos);
+                  setPhoto(urlForPhotos)
+              }
+              // need to check the above setPhoto works or you have to setPhoto(slash+data.photoPath)
+                let imgPath = data.photoPath.toString();
+                  let photoFirstChar  =  imgPath.slice(0,1);
+                  let isForwardSlash = photoFirstChar==='/' ? true : false;
+                console.log('AdminProductUpdate JSX loadProduct ::  photoPath contains forwardslash '+isForwardSlash );
+                if(isForwardSlash)
+                {
+                  console.log(' photoPath no forwardslash  required '+isForwardSlash );
+                      setSlash('');
+                    // setPhoto(data.photoPath)
+                }else {
+                    console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+                    setSlash('/');
+                    //setPhoto('/'+data.photoPath)
+                }
+
+              }
+         }
         
       }
 
