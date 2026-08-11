@@ -23,7 +23,52 @@ export default function PersonalizedSection() {
     try {
       setLoading(true);
       const { data } = await axios.get('/products/recommended?limit=8');
-      setProducts(data || []);
+        //iterate through all products check which had res.cloudinay.com photoPath
+      let productsPhotoPathUpdate =    data.map(p => { 
+          if(p !==undefined && p.photoPath !==undefined && p.photoPath !==null){
+         let imgPath = p.photoPath.toString();
+         //product.photoPath && isPhotoCloudinary ?  product.photoPath : (product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}` : '/placeholder.png'
+        if(imgPath.toLowerCase().startsWith("https://res.cloudinary.com")){
+                  //  setPhoto(data.photoPath.toString());
+                    console.log('Cloudinary url available ');
+              console.log(' Cloudinary url  '+imgPath );   
+              p.photoPath = imgPath;
+                 //   setIsPhotoCloudinary(true)
+                    //setIsCreateObject(false)
+          }
+        else {
+            if (imgPath.toLowerCase().startsWith("https://localhost:8000")){
+                            console.log('localhost:8000 url available ');
+              console.log(' localhost:8000 url  '+imgPath );  
+                 return imgPath; 
+            }
+            else { 
+                  let photoFirstChar  =  imgPath.slice(0,1);
+                  let isForwardSlash = photoFirstChar==='/' ? true : false;
+                console.log(' photoPath contains forwardslash '+isForwardSlash );
+                if(isForwardSlash)
+                {
+                  console.log(' photoPath no forwardslash  required '+isForwardSlash );
+                    //  setSlash('');
+                // return process.env.REACT_APP_API_PHOTOS+imgPath;
+                    p.photoPath = process.env.REACT_APP_API_PHOTOS+imgPath;
+                }else {
+                    console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+                //   setSlash('/');
+                //   return process.env.REACT_APP_API_PHOTOS+'/'+imgPath;
+                    p.photoPath =  process.env.REACT_APP_API_PHOTOS+'/'+imgPath;
+                }
+            }
+          }
+      }
+       else {
+            p.photoPath = 
+              '/placeholder.png'
+        }
+        return p;
+      })
+      setProducts(productsPhotoPathUpdate);
+//     setProducts(data || []);
     } catch (error) {
       console.error('Error loading recommendations:', error);
     } finally {

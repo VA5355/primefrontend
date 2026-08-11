@@ -25,6 +25,8 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+   const [productSortedBySold, setProductSortedBySold] = useState([] );
+
   const navigate = useNavigate();
 
   const getTotal = useCallback(async () => {
@@ -62,6 +64,19 @@ export default function Home() {
 
   useEffect(() => {
     loadProducts();
+    setTimeout(()=> {
+         let  productSortedBySoldDump  = [...products]?.sort((a, b) => (a.sold < b.sold ? 1 : -1));
+         
+       productSortedBySoldDump =   getProductPathRight([...productSortedBySoldDump]);
+        // productSortedBySold = [...productSortedBySold]?.sort((a, b) => (a.sold < b.sold ? 1 : -1));
+        if(Array.isArray(productSortedBySoldDump) && productSortedBySoldDump.length > 0){
+          console.log("Product Photo Paths might have aligned ");
+          setProductSortedBySold(productSortedBySoldDump);
+        }
+
+    }, 4000)
+
+
     getTotal();
   }, [loadProducts, getTotal]);
 
@@ -69,8 +84,57 @@ export default function Home() {
     if (page === 1) return;
     loadMore();
   }, [page, loadMore]);
-
-  const productSortedBySold = [...products]?.sort((a, b) => (a.sold < b.sold ? 1 : -1));
+  
+    //[...products]?.sort((a, b) => (a.sold < b.sold ? 1 : -1));
+  const getProductPathRight = (data) => {
+        //iterate through all products check which had res.cloudinay.com photoPath
+      let productsPhotoPathUpdate =    data.map(p => { 
+          if(p !==undefined && p.photoPath !==undefined && p.photoPath !==null){
+         let imgPath = p.photoPath.toString();
+         //product.photoPath && isPhotoCloudinary ?  product.photoPath : (product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}` : '/placeholder.png'
+        if(imgPath.toLowerCase().startsWith("https://res.cloudinary.com")){
+                  //  setPhoto(data.photoPath.toString());
+                    console.log('Cloudinary url available ');
+              console.log(' Cloudinary url  '+imgPath );   
+              p.photoPath = imgPath;
+                 //   setIsPhotoCloudinary(true)
+                    //setIsCreateObject(false)
+          }
+        else {
+            if (imgPath.toLowerCase().startsWith("https://localhost:8000")){
+                            console.log('localhost:8000 url available ');
+              console.log(' localhost:8000 url  '+imgPath );  
+                 return imgPath; 
+            }
+            else { 
+                  let photoFirstChar  =  imgPath.slice(0,1);
+                  let isForwardSlash = photoFirstChar==='/' ? true : false;
+                console.log(' photoPath contains forwardslash '+isForwardSlash );
+                if(isForwardSlash)
+                {
+                  console.log(' photoPath no forwardslash  required '+isForwardSlash );
+                    //  setSlash('');
+                // return process.env.REACT_APP_API_PHOTOS+imgPath;
+                    p.photoPath = process.env.REACT_APP_API_PHOTOS+imgPath;
+                }else {
+                    console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+                //   setSlash('/');
+                //   return process.env.REACT_APP_API_PHOTOS+'/'+imgPath;
+                    p.photoPath =  process.env.REACT_APP_API_PHOTOS+'/'+imgPath;
+                }
+            }
+          }
+      }
+       else {
+            p.photoPath = 
+              '/placeholder.png'
+        }
+        return p;
+      })
+     // setProducts(productsPhotoPathUpdate);
+      return productsPhotoPathUpdate;
+  }
+  
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
