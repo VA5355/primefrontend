@@ -101,7 +101,7 @@ export default function Home() {
                     //setIsCreateObject(false)
           }
         else {
-            if (imgPath.toLowerCase().startsWith("https://localhost:8000")){
+            if (imgPath.toLowerCase().startsWith("https://localhost:8000")|| imgPath.toLowerCase().startsWith(process.env.REACT_APP_RAZORORDERANDPAYMENTURL)){
                             console.log('localhost:8000 url available ');
               console.log(' localhost:8000 url  '+imgPath );  
                  return imgPath; 

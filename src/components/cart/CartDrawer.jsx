@@ -71,8 +71,8 @@ const applySlash = (item) => {
                     //setIsCreateObject(false)
           }
         else {
-            if (imgPath.toLowerCase().startsWith("https://localhost:8000")){
-                            console.log('localhost:8000 url available ');
+            if (imgPath.toLowerCase().startsWith("https://localhost:8000")|| imgPath.toLowerCase().startsWith(process.env.REACT_APP_RAZORORDERANDPAYMENTURL)){
+                            console.log(imgPath.toLowerCase()+' url available ');
               console.log(' localhost:8000 url  '+imgPath );  
                  return imgPath; 
           }

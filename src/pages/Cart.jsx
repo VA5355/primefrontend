@@ -74,18 +74,26 @@ export default function Cart() {
                     //setIsCreateObject(false)
           }
      else{ 
-             let photoFirstChar  =  imgPath.slice(0,1);
+          if (imgPath.toLowerCase().startsWith("https://localhost:8000")|| imgPath.toLowerCase().startsWith(process.env.REACT_APP_RAZORORDERANDPAYMENTURL)){
+                            console.log('localhost:8000 url available ');
+              console.log(' localhost:8000 url  '+imgPath );  
+                 return imgPath; 
+          }
+          else { 
+                let photoFirstChar  =  imgPath.slice(0,1);
              let isForwardSlash = photoFirstChar==='/' ? true : false;
-          console.log(' photoPath contains forwardslash '+isForwardSlash );
-          if(isForwardSlash)
-          {
-             console.log(' photoPath no forwardslash  required '+isForwardSlash );
-             //   setSlash('');
-             return process.env.REACT_APP_API_PHOTOS+imgPath;
-          }else {
-              console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
-            //  setSlash('/');
-            return process.env.REACT_APP_API_PHOTOS+'/'+imgPath;
+            console.log(' photoPath contains forwardslash '+isForwardSlash );
+            if(isForwardSlash)
+            {
+              console.log(' photoPath no forwardslash  required '+isForwardSlash );
+              //   setSlash('');
+              return process.env.REACT_APP_API_PHOTOS+imgPath;
+            }else {
+                console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
+              //  setSlash('/');
+              return process.env.REACT_APP_API_PHOTOS+'/'+imgPath;
+            }
+
           }
         }
       }
