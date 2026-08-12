@@ -314,7 +314,7 @@ export default function AdminProducts ()
                 </Link>
               </motion.div>
             </motion.div>
-          </div>
+          </div>  {/* Main Content */}
         </div>
       </div>
     </PageContainer>

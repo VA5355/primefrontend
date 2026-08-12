@@ -9,7 +9,7 @@ import Badge from '../../components/ui/Badge';
 import moment from 'moment';
 import {
   Users,
-  Package,
+  Package,Scan ,
   ShoppingCart,
   TrendingUp,
   IndianRupee,
@@ -32,6 +32,7 @@ import usePageTitle from '../../hooks/usePageTitle';
 const adminNavItems = [
   { to: "/dashboard/admin/category", label: "Create Category", icon: Plus },
   { to: "/dashboard/admin/product", label: "Create Product", icon: Package },
+  { to: "/dashboard/admin/scanproduct", label: "Scan Product", icon: Scan  },
   { to: "/dashboard/admin/products", label: "All Products", icon: Eye },
   { to: "/dashboard/admin/orders", label: "Manage Orders", icon: ShoppingCart }
 ];

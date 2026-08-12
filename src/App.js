@@ -30,6 +30,8 @@ import BraintreeCallback from './pages/braintree/BraintreeCallback';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import AdminCategory from './pages/admin/AdminCategory.jsx';
 import AdminProduct from './pages/admin/AdminProduct.jsx';
+import AdminProductScanForm from './pages/admin/AdminProductScanForm.jsx';
+import SearchProductScan from './pages/SearchProductScan.jsx';
 import AdminProducts from './pages/admin/AdminProducts.jsx';
 import AdminProductUpdate from './pages/admin/AdminProductUpdate.jsx';
 import AdminOrders from './pages/admin/AdminOrders.jsx';
@@ -37,6 +39,7 @@ import UserDashboard from './pages/user/UserDashboard.jsx';
 import UserProfile from './pages/user/UserProfile.jsx';
 import UserOrders from './pages/user/UserOrders.jsx';
 import UserRoute from './components/routes/UserRoute.jsx';
+import UserReadOnlyRoute from './components/routes/UserReadOnlyRoute.jsx';
 import AdminRoute from './components/routes/AdminRoute.jsx';
 import CustomerOnboarding from './pages/CustomerOnboarding.jsx';
 
@@ -90,11 +93,15 @@ function AppContent() {
             <Route path='user/profile' element={ <UserProfile /> } />
             <Route path='user/orders' element={ <UserOrders /> } />
           </Route>
-
+           <Route path='/scansearch' element={ <UserReadOnlyRoute /> } >
+    
+              <Route path='admin/scanproduct' element={  <ReduxProvider>  <ModalProvider>   <SearchProductScan /></ModalProvider>  </ReduxProvider> } />
+         </Route>
           <Route path='/dashboard' element={ <AdminRoute /> } >
             <Route path='admin' element={ <AdminDashboard /> } />
             <Route path='admin/category' element={ <AdminCategory /> } />
             <Route path='admin/product' element={  <ReduxProvider>  <ModalProvider>   <AdminProduct /></ModalProvider>  </ReduxProvider> } />
+            <Route path='admin/scanproduct' element={  <ReduxProvider>  <ModalProvider>   <AdminProductScanForm /></ModalProvider>  </ReduxProvider> } />
             <Route path='admin/products' element={ <AdminProducts /> } />
             <Route
               path="admin/product/update/:slug"
