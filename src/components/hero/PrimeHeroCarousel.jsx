@@ -22,6 +22,13 @@ import "swiper/css/pagination";
 import "swiper/css/effect-creative";
 
 import "./PrimeHeroCarousel.css";
+import {
+ 
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+
+
 
 const fallbackSlides = [
   {
@@ -110,7 +117,10 @@ export default function PrimeHeroCarousel({
             disableOnInteraction: false,
             pauseOnMouseEnter: true,
           }}
-          navigation={true}
+           navigation={{
+            prevEl: ".prime-custom-prev",
+            nextEl: ".prime-custom-next",
+          }} 
           pagination={{
             clickable: true,
           }}
@@ -127,6 +137,13 @@ export default function PrimeHeroCarousel({
           }}
           className="prime-metro-swiper"
         >
+          {/* Custom Navigation Buttons */}
+          <button className="prime-custom-prev swiper-button-prev " aria-label="Previous slide">
+            <ChevronLeft size={22} color="#ea580c" />
+          </button>
+          <button className="prime-custom-next swiper-button-next " aria-label="Next slide">
+            <ChevronRight size={22} color="#ea580c" />
+          </button>
           {slides.map((slide) => (
             <SwiperSlide key={slide.id}>
               <article className="prime-slide">

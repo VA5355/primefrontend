@@ -16,6 +16,7 @@
 ========================================================= */
 
 .prime-metro-swiper {
+  position: relative; /* Anchor for absolute navigation controls */
   width: 100%;
   padding-bottom: 40px !important;
   overflow: hidden !important; /* Prevents overflow text leakage */
@@ -249,29 +250,78 @@
 }
 
 /* =========================================================
-   SWIPER CONTROLS & PAGINATION
+   SWIPER CONTROLS & PAGINATION (POSITIONING & FLAME STYLE)
 ========================================================= */
 
 .prime-metro-swiper .swiper-button-prev,
 .prime-metro-swiper .swiper-button-next {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 1px solid rgba(234, 88, 12, 0.2);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 20 !important;
+  width: 44px !important;
+  height: 44px !important;
+  margin-top: -20px !important; /* Offset bottom padding */
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(234, 88, 12, 0.25) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.25s ease-in-out !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
+.prime-metro-swiper .swiper-button-prev {
+  left: 20px !important;
+  right: auto !important;
+}
+
+.prime-metro-swiper .swiper-button-next {
+  right: 20px !important;
+  left: auto !important;
+}
+
+/* Hide Swiper's native SVGs */
+.prime-metro-swiper .swiper-button-prev svg,
+.prime-metro-swiper .swiper-button-next svg {
+  display: none !important;
+}
+
+/* Base custom chevron shape */
 .prime-metro-swiper .swiper-button-prev::after,
 .prime-metro-swiper .swiper-button-next::after {
-  color: #ea580c;
-  font-size: 16px;
-  font-weight: 900;
+  content: '' !important;
+  display: block !important;
+  width: 20px !important;
+  height: 20px !important;
+  background-color: #ea580c !important;
+}
+
+/* Left Chevron */
+.prime-metro-swiper .swiper-button-prev::after {
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 18-6-6 6-6'/%3E%3C/svg%3E") center/contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 18-6-6 6-6'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+
+/* Right Chevron */
+.prime-metro-swiper .swiper-button-next::after {
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E") center/contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+
+/* Hover States */
+.prime-metro-swiper .swiper-button-prev:hover,
+.prime-metro-swiper .swiper-button-next:hover {
+  background: #fff7ed !important;
+  border-color: #ea580c !important;
+  transform: translateY(-50%) scale(1.08) !important;
+  box-shadow: 0 6px 18px rgba(234, 88, 12, 0.25) !important;
 }
 
 .prime-metro-swiper .swiper-pagination-bullet {
-  background: #94a3b8;
-  opacity: 0.5;
+  background: #fdba74;
+  opacity: 0.6;
 }
 
 .prime-metro-swiper .swiper-pagination-bullet-active {
@@ -296,5 +346,13 @@
 
   .prime-slide-image-wrapper {
     min-height: 260px;
+  }
+
+  .prime-metro-swiper .swiper-button-prev {
+    left: 8px !important;
+  }
+
+  .prime-metro-swiper .swiper-button-next {
+    right: 8px !important;
   }
 }
