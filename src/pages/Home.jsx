@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Grid3x3, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import HeroSection from '../components/hero/HeroSection';
+import PrimeHeroCarousel from '../components/hero/PrimeHeroCarousel';
 import ProductCard from '../components/cards/ProductCard';
 import { SkeletonProductGrid } from '../components/ui/Skeleton';
 import Button from '../components/ui/Button';
@@ -137,16 +138,17 @@ export default function Home() {
   
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Hero Section */}
-      <HeroSection />
+    <div className="min-h-screen max-w-8xl bg-gray-50 dark:bg-gray-900">
+      {/* Hero Section <HeroSection />*/}
+      
+      <PrimeHeroCarousel />
 
       {/* Trending Products Section */}
       <TrendingProducts />
 
       {/* Categories Section */}
       <section className="py-16 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -206,7 +208,7 @@ export default function Home() {
 
       {/* Best Sellers Section */}
       <section className="py-16 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -281,7 +283,7 @@ export default function Home() {
 
       {/* Features Section */}
       <section className="py-16 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {

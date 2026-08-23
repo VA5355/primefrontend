@@ -73,12 +73,12 @@ export default function Menu() {
           ? "bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-md dark:shadow-gray-800/50" 
           : "bg-white dark:bg-gray-900 shadow-sm dark:shadow-gray-800/30"
       )}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo & Desktop Nav */}
             <div className="flex items-center gap-8">
               <NavLink to="/">
-                <ShopHubLogoWithText />
+                <ShopHubLogoWithText size={` ${isMobile} ? 'xssmall' : 'default' `}/>
               </NavLink>
 
               {/* Desktop Navigation */}

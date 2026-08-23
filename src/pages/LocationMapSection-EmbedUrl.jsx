@@ -26,7 +26,7 @@ export default function LocationMapSectionEmbedUrl({
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto space-y-10 relative z-10">
+      <div className="max-w-8xl mx-auto space-y-10 relative z-10">
         
         {/* Animated Header */}
         <motion.div 

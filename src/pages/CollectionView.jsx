@@ -120,7 +120,7 @@ export default function CollectionView() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="animate-pulse">
             <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded-2xl mb-8"></div>
             <SkeletonProductGrid count={8} />
@@ -161,7 +161,7 @@ export default function CollectionView() {
       </div>
 
       {/* Breadcrumb */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <nav className="flex items-center gap-2 text-sm">
           <button
             onClick={() => navigate('/')}
@@ -185,7 +185,7 @@ export default function CollectionView() {
       </div>
 
       {/* Toolbar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
           <div className="flex items-center gap-2">
             <Package className="h-5 w-5 text-primary" />
@@ -228,7 +228,7 @@ export default function CollectionView() {
       </div>
 
       {/* Products Grid/List */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {sortedProducts.length > 0 ? (
           <div className={viewMode === 'grid'
             ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
@@ -266,7 +266,7 @@ export default function CollectionView() {
 
       {/* Related Collections */}
       <div className="bg-white dark:bg-gray-800 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
             Explore Other Collections
           </h2>

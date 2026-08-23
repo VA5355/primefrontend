@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from 'axios';
@@ -26,6 +26,17 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Helper to determine target dashboard based on role
+  const getDashboardPath = (user) => `/dashboard/${user?.role === 1 ? 'admin' : 'user'}`;
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (auth?.token) {
+      const defaultPath = getDashboardPath(auth?.user);
+      navigate(defaultPath, { replace: true });
+    }
+  }, [auth, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -48,9 +59,13 @@ export default function Login() {
         setAuth({ ...auth, token: data.token, user: data.user });
         toast.success('Welcome back!');
         
-        const redirectPath = location.state || 
-          `/dashboard/${data?.user?.role === 1 ? 'admin' : 'user'}`;
-        navigate(redirectPath);
+        // Safely extract redirect route from state, or fallback to default dashboard
+        const fromPath = location.state?.from?.pathname || location.state;
+        const targetPath = (typeof fromPath === 'string' && fromPath !== '/login')
+          ? fromPath 
+          : getDashboardPath(data?.user);
+
+        navigate(targetPath, { replace: true });
       }
     } catch (error) {
       console.error(error);

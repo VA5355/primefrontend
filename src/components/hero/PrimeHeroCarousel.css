@@ -1,0 +1,300 @@
+.prime-hero-section {
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+}
+
+.prime-hero-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 18px 16px;
+}
+
+/* =========================================================
+   SWIPER (Prevents text bleeding/dangling from next slide)
+========================================================= */
+
+.prime-metro-swiper {
+  width: 100%;
+  padding-bottom: 40px !important;
+  overflow: hidden !important; /* Prevents overflow text leakage */
+}
+
+.prime-metro-swiper .swiper-slide {
+  height: auto;
+  overflow: hidden;
+}
+
+/* =========================================================
+   MAIN SLIDE & UNIFIED BACKGROUND
+========================================================= */
+
+.prime-slide {
+  position: relative;
+  overflow: hidden;
+  min-height: 480px;
+  border-radius: 20px;
+  
+  /* Smooth, seamless warm orange-amber background */
+  background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 40%, #fdba74 70%, #f97316 100%);
+  border: 1px solid rgba(234, 88, 12, 0.2);
+  box-shadow: 0 12px 30px -10px rgba(234, 88, 12, 0.2);
+}
+
+.prime-slide-glow {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(90px);
+  pointer-events: none;
+}
+
+.prime-slide-glow-right {
+  width: 400px;
+  height: 400px;
+  top: -120px;
+  right: -80px;
+  background: rgba(234, 88, 12, 0.25);
+}
+
+.prime-slide-glow-left {
+  width: 350px;
+  height: 350px;
+  bottom: -100px;
+  left: -80px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* =========================================================
+   GRID
+========================================================= */
+
+.prime-slide-grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  min-height: 480px;
+}
+
+/* =========================================================
+   LEFT CONTENT & TYPOGRAPHY
+========================================================= */
+
+.prime-slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px 56px;
+}
+
+/* Top Badge: Pure White Background with Dark Title Blue Text */
+.prime-slide-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin-bottom: 16px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  color: #0f172a; /* Dark title blue/slate */
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.prime-slide-badge svg {
+  color: #ea580c; /* Orange icon accent */
+}
+
+/* Eyebrow: PRIME METRO DELIVERY */
+.prime-slide-eyebrow {
+  margin-bottom: 10px;
+  color: #7c2d12;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* Title */
+.prime-slide-title {
+  max-width: 750px;
+  margin: 0;
+  color: #0f172a; /* Slate Black / Beginning Blue */
+  font-size: clamp(30px, 3.8vw, 46px);
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+/* Description */
+.prime-slide-description {
+  max-width: 580px;
+  margin: 16px 0 0;
+  color: #1e293b;
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+/* Trust Badges: Pure White Background with Dark Blue Text */
+.prime-slide-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.prime-trust-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  color: #0f172a; /* Dark title blue/slate */
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.prime-trust-item svg {
+  color: #ea580c;
+}
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.prime-slide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.prime-primary-button,
+.prime-secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 10px 26px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.prime-primary-button {
+  gap: 8px;
+  background: #ea580c;
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(234, 88, 12, 0.35);
+}
+
+.prime-primary-button:hover {
+  background: #c2410c;
+  transform: translateY(-2px);
+}
+
+.prime-secondary-button {
+  border: 1.5px solid #0f172a;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.prime-secondary-button:hover {
+  background: #f8fafc;
+  transform: translateY(-2px);
+}
+
+/* =========================================================
+   IMAGE & NO-SEAM OVERLAY
+========================================================= */
+
+.prime-slide-image-wrapper {
+  position: relative;
+  min-height: 480px;
+  overflow: hidden;
+  /* Removed split color background to eliminate seam line */
+  background: transparent; 
+}
+
+.prime-slide-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Soft transition overlay instead of hard line */
+.prime-slide-image-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+ /* background: linear-gradient(
+    90deg,
+    #fdba74 0%,
+  
+    rgba(253, 186, 116, 0.2) 40%,
+    transparent 100%
+  );*//*  rgba(253, 186, 116, 0.8) 0%,*/
+}
+
+/* =========================================================
+   SWIPER CONTROLS & PAGINATION
+========================================================= */
+
+.prime-metro-swiper .swiper-button-prev,
+.prime-metro-swiper .swiper-button-next {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid rgba(234, 88, 12, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.prime-metro-swiper .swiper-button-prev::after,
+.prime-metro-swiper .swiper-button-next::after {
+  color: #ea580c;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.prime-metro-swiper .swiper-pagination-bullet {
+  background: #94a3b8;
+  opacity: 0.5;
+}
+
+.prime-metro-swiper .swiper-pagination-bullet-active {
+  background: #ea580c;
+  opacity: 1;
+  width: 24px;
+  border-radius: 999px;
+}
+
+/* =========================================================
+   RESPONSIVE BREAKPOINTS
+========================================================= */
+
+@media (max-width: 960px) {
+  .prime-slide-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .prime-slide-content {
+    padding: 32px 24px;
+  }
+
+  .prime-slide-image-wrapper {
+    min-height: 260px;
+  }
+}

@@ -85,7 +85,7 @@ export default function PersonalizedSection() {
   if (loading) {
     return (
       <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
               <Sparkles className="h-8 w-8 text-purple-500" />
@@ -106,7 +106,7 @@ export default function PersonalizedSection() {
 
   return (
     <section className="py-16 bg-gradient-to-b from-purple-50 to-white dark:from-gray-800 dark:to-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
