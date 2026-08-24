@@ -179,6 +179,9 @@ export function ShopHubLogoWithTextOld({ className = "", size = "default" }) {
     </div>
   );
 }
+/*   OL
+  Animated Container items-center  Responsive Logo  Responsive Title 
+  bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 dark:from-violet-400 dark:via-purple-400 dark:to-pink-400  
 
 export function ShopHubLogoWithText({ className = "", size = "default" }) {
   const sizes = {
@@ -222,13 +225,13 @@ useEffect(()=>{
 
   return (
     <div className={`flex items-center gap-2 brand-logo group cursor-pointer ${className}`} data-testid="brand-logo">
-       {/* Animated Container items-center */}
+      
         <motion.div 
           layout
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className={`flex  items-center ${ (isMobile ? '  w-8 gap-2' : (currentSize ? currentSize.logo : ' mt-10 w-36 gap-1') )   }   gap-1 md:gap-4 `}
         >
-         {/* Responsive Logo */}
+        
           <motion.div 
             layout 
             className={`text-blue-400 ${currentSize ? currentSize.logo : ' w-12'}   md:w-12 md:h-12`}
@@ -236,13 +239,13 @@ useEffect(()=>{
           <ShopHubLogo className={`${currentSize ? currentSize.logo : 'h-2 w-4'} logo transition-transform group-hover:rotate-12`} />
          </motion.div>
          
-           {/* Responsive Title */}
+           
           <motion.h1 
             layout 
             className="text-lg font-bold md:text-2xl tracking-tight"
-          >  {/**  flex flex-col*/}
+          >   
            <div className={ `flex flex-col ml-4  ${  isMobile ? '  w-36 gap-2': '  w-120 gap-2' } `}>
-            {/**bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 dark:from-violet-400 dark:via-purple-400 dark:to-pink-400  */}
+            
             <span className={`${currentSize ? currentSize.text : ''} ${ (isMobile ? '  text-sm' :   '  text-2xl') } font-bold bg-gradient-to-r from-amber-950 via-orange-600 to-amber-500 dark:from-orange-500 dark:via-amber-400 dark:to-yellow-300  bg-clip-text text-transparent transition-all group-hover:scale-105`}>
             Prime Computer & Network
             </span>
@@ -251,6 +254,56 @@ useEffect(()=>{
             </span>
           </div>
           </motion.h1>
+      </motion.div>
+    </div>
+  );
+}  */
+export function ShopHubLogoWithText({ className = "", size = "default" }) {
+  const sizes = {
+    xssmall: { logo: "h-4 w-4", text: "text-xs" },
+    small: { logo: "h-8 w-8", text: "text-xl" },
+    default: { logo: "h-10 w-30", text: "text-2xl" },
+    large: { logo: "h-12 w-12", text: "text-3xl" }
+  };
+
+  const isMobile = useIsMobile();
+  const [currentSize, setCurrentSize] = useState(sizes[size] || sizes.default);
+
+  useEffect(() => {
+    // Correctly reference sizes.small instead of sizes[sizes.small]
+    const activeSize = isMobile ? sizes.small : (sizes[size] || sizes.default);
+    setCurrentSize(activeSize);
+  }, [isMobile, size]); // Listened dependencies ensure instant re-alignment on screen resize
+
+  return (
+    <div className={`flex items-center gap-2 brand-logo group cursor-pointer ${className}`} data-testid="brand-logo">
+      <motion.div 
+        layout
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="flex items-center gap-2 md:gap-4"
+      >
+        {/* Responsive Logo */}
+        <motion.div 
+          layout 
+          className="w-8 h-8 md:w-12 md:h-12 text-blue-400 shrink-0 flex items-center justify-center"
+        >
+          <ShopHubLogo className={`${currentSize?.logo || 'h-8 w-8'} logo transition-transform group-hover:rotate-12`} />
+        </motion.div>
+        
+        {/* Responsive Title */}
+        <motion.h1 
+          layout 
+          className="tracking-tight"
+        >
+          <div className="flex flex-col ml-2">
+            <span className={`${currentSize?.text || 'text-xl'} md:text-2xl font-bold bg-gradient-to-r from-amber-950 via-orange-600 to-amber-500 dark:from-orange-500 dark:via-amber-400 dark:to-yellow-300 bg-clip-text text-transparent transition-all group-hover:scale-105 whitespace-nowrap`}>
+              Prime Computer & Network
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 -mt-0.5">
+              Your Shopping Paradise
+            </span>
+          </div>
+        </motion.h1>
       </motion.div>
     </div>
   );

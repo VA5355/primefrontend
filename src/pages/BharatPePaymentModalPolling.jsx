@@ -14,6 +14,9 @@ import {
   ShieldCheck,
   Search
 } from 'lucide-react';
+import { REACT_APP_BHARATPEORDERANDPAYMENTURL } from '../libs/client';
+import { REACT_APP_BHARATPEORDERANDPAYMENTURL_LOCAL } from '../libs/client';
+import { REACT_APP_NGROKLOCALHOST } from '../libs/client';
 
 export default function BharatPePaymentModal({
   isOpen,
@@ -46,14 +49,21 @@ export default function BharatPePaymentModal({
 
     try {
       const targetId = orderId || clientTxnId;
-      const res = await fetch(`/api/bharatpeorder/status/${targetId}`);
+       const baseUrl =
+             ( window.location.hostname === `${REACT_APP_NGROKLOCALHOST}` ||   window.location.hostname === 'localhost')
+            //  window.location.hostname === `${REACT_APP_NGROKLOCALHOST}`
+                 ?  `${ REACT_APP_BHARATPEORDERANDPAYMENTURL_LOCAL}`
+                      : `${ REACT_APP_BHARATPEORDERANDPAYMENTURL}`;
+
+
+      const res = await fetch(`${baseUrl}/api/bharatpeorder/status/${targetId}`);
       const data = await res.json();
 
       // Check if success from Backend DB or forwarded Vyapar response
       if (data?.status === true && (data?.data?.status === 'success' || data?.orderStatus === 'success')) {
         setPaymentStatus('success');
         // Redirect automatically to the success page
-        window.location.href = `/vyaparbharatpesuccess?order_id=${orderId || clientTxnId}`;
+        window.location.href = `/vyaparbharatpesuccess?order_id=${orderId}&clientTxnId=${ clientTxnId}`;
       } else if (data?.data?.status === 'failed') {
         setPaymentStatus('failed');
       }

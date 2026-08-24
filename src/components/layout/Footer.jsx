@@ -69,7 +69,8 @@ export default function Footer() {
                     {/* Single-line Header Style Heading */}
                     <motion.h1 layout className="text-lg font-bold md:text-2xl tracking-tight">
                       <div className="flex flex-col">
-                        <span className="text-xl md:text-2xl font-black text-amber-950 tracking-tight whitespace-nowrap">
+                       {/* <span className="text-xl md:text-2xl font-black text-amber-950 tracking-tight whitespace-nowrap">*/} 
+                        <span className={`${currentSize ? currentSize.text : ''} ${ (isMobile ? '  text-sm' :   '  text-2xl') } font-bold bg-gradient-to-r from-amber-950 via-orange-600 to-amber-500 dark:from-orange-500 dark:via-amber-400 dark:to-yellow-300  bg-clip-text text-transparent transition-all group-hover:scale-105`}>
                           Prime Computer & Network
                         </span>
                         <span className="text-xs font-semibold text-slate-500 -mt-0.5">

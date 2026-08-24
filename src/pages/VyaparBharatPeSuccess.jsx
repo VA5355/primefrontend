@@ -14,22 +14,26 @@ import {
   Copy,
   Check
 } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 
 // Demo Initial Data structure - Replace or pass via props/route state
 const VyaparBharatPeSuccess = ({ 
   orderId = "5fe8a3c47b1c4d6f9e0d8a2b1c3d4e5f", 
   clientTxnId = "TXN123456",
   amount = 150.50,
-  apiKey = "vg_live_YOUR_KEY" // Always keep sensitive keys in Backend API routes
+  apiKey =  process.env.REACT_APP_VYAPAR_PROD_KEY// Always keep sensitive keys in Backend API routes"vg_live_YOUR_KEY"
 }) => {
   const [paymentStatus, setPaymentStatus] = useState('verifying'); // 'verifying' | 'success' | 'failed' | 'timeout'
   const [orderDetails, setOrderDetails] = useState(null);
   const [timeLeft, setTimeLeft] = useState(120); // 120 seconds fallback timer
   const [copied, setCopied] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
+  const [inOrderId, setInOrderId] = useState(false);
+  const [inClientTxnId, setInClientTxnId] = useState(false);
+    const params = useParams();
 
   // Function to call Check Order Status API
-  const checkOrderStatus = useCallback(async () => {
+  const checkOrderStatus = useCallback(async ( inId ,inClientTxnId) => {
     setIsChecking(true);
     try {
       // In production, route this call through your Node.js backend:
@@ -40,8 +44,8 @@ const VyaparBharatPeSuccess = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           key: apiKey,
-          order_id: orderId,
-          client_txn_id: clientTxnId
+          order_id: orderId || inId ,
+          client_txn_id: inClientTxnId
         })
       });
 
@@ -58,8 +62,23 @@ const VyaparBharatPeSuccess = ({
     } finally {
       setIsChecking(false);
     }
-  }, [orderId, clientTxnId, apiKey]);
+  }, [  apiKey]);//orderId,
 
+   useEffect(() => {
+    if (params?.order_id && params?.clientTxnId) 
+    { let orid = params?.order_id;
+      console.log('Vyapar Bharat Pe Success  order_id '+orid);
+      setInOrderId( orid);
+      let txnId = params?.clientTxnId;
+      console.log('Vyapar Bharat Pe Success  clientTxnId '+txnId);
+      setInClientTxnId( txnId);
+
+
+      checkOrderStatus(orid, txnId);
+    }
+
+      //loadProduct();
+  }, [params?.order_id]);
   // 120-Second Countdown Timer
   useEffect(() => {
     if (paymentStatus !== 'verifying') return;

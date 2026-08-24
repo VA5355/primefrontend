@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Toaster } from 'react-hot-toast';
 // 1. IMPORT YOUR GLOBAL SCHEMA
 import { GlobalSchema } from './components/GlobalSchema.jsx'; 
@@ -42,6 +43,7 @@ import UserRoute from './components/routes/UserRoute.jsx';
 import UserReadOnlyRoute from './components/routes/UserReadOnlyRoute.jsx';
 import AdminRoute from './components/routes/AdminRoute.jsx';
 import CustomerOnboarding from './pages/CustomerOnboarding.jsx';
+import VyaparBharatPeSuccess from './pages/VyaparBharatPeSuccess.jsx';
 
 
 const PageNotFound = () =>
@@ -56,7 +58,7 @@ const PageNotFound = () =>
 
 function AppContent() {
   const [cartDrawerOpen, setCartDrawerOpen] = useCartDrawer();
-  
+  const [vyaparkey , setVyaparkey] = useState(process.env.REACT_APP_VYAPAR_PROD_KEY)
   return (
     <>
           {/* 2. INJECT GLOBAL SCHEMA HERE */}
@@ -75,6 +77,8 @@ function AppContent() {
           <Route path='/collections/:slug' element={ <CollectionView /> } />
           <Route path='/cart' element={ <Cart /> } />
           <Route path='/checkout' element={ <ReduxProvider>  <ModalProvider>  <Checkout /> </ModalProvider>  </ReduxProvider> } />
+          <Route path='/vyaparbharatpesuccess' element={ <ReduxProvider>  <ModalProvider>  <VyaparBharatPeSuccess apiKey={vyaparkey} /> </ModalProvider>  </ReduxProvider> } />
+
           <Route path='/search' element={ <Search /> } />
           <Route path='/product/:slug' element={ <ProductView /> } />
           <Route path='/login' element={ <Login /> } />
