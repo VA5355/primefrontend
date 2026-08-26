@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
+import { useNavigate } from 'react-router-dom';
 import { 
   X, 
   Loader2, 
@@ -17,6 +18,7 @@ import {
 import { REACT_APP_BHARATPEORDERANDPAYMENTURL } from '../libs/client';
 import { REACT_APP_BHARATPEORDERANDPAYMENTURL_LOCAL } from '../libs/client';
 import { REACT_APP_NGROKLOCALHOST } from '../libs/client';
+import axios from "axios";
 
 export default function BharatPePaymentModal({
   isOpen,
@@ -27,6 +29,8 @@ export default function BharatPePaymentModal({
   orderData,
   onOrderExpired
 }) {
+  const navigate = useNavigate();
+
   const gatewayData = orderData?.data;
   const orderId = gatewayData?.order_id || responseState?.orderId;
   const clientTxnId = gatewayData?.client_txn_id;
@@ -37,9 +41,18 @@ export default function BharatPePaymentModal({
 
   // State Management
   const [timeLeft, setTimeLeft] = useState(120); // 120-second active window
+  const [syncTimeLeft, setSyncTimeLeft] = useState(50); // 50-second post-expiry polling window
   const [isTimedOut, setIsTimedOut] = useState(false);
   const [isManualChecking, setIsManualChecking] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState('pending'); // 'pending' | 'success' | 'failed'
+  const [paymentStatus, setPaymentStatus] = useState('pending'); // 'pending' | 'success' | 'failed' | 'expired'
+  const [qrStatus, setQrStatus] = useState('active'); // 'active' | 'expired' | 'success' | 'failed'
+
+  // Standard redirect helper back to /cart
+  const handleRedirectToCart = useCallback(() => {
+    if (onOrderExpired || qrStatus === 'expired') onOrderExpired?.();
+    onClose?.();
+    navigate('/cart');
+  }, [navigate, onClose, onOrderExpired, qrStatus]);
 
   // -------------------------------------------------------------
   // 1. Polling Function: Fetch Status from Node.js Backend
@@ -48,32 +61,45 @@ export default function BharatPePaymentModal({
     if (!orderId && !clientTxnId) return;
 
     try {
-      const targetId = orderId || clientTxnId;
-       const baseUrl =
-             ( window.location.hostname === `${REACT_APP_NGROKLOCALHOST}` ||   window.location.hostname === 'localhost')
-            //  window.location.hostname === `${REACT_APP_NGROKLOCALHOST}`
-                 ?  `${ REACT_APP_BHARATPEORDERANDPAYMENTURL_LOCAL}`
-                      : `${ REACT_APP_BHARATPEORDERANDPAYMENTURL}`;
+      const targetId = clientTxnId;
+      const baseUrl =
+        (window.location.hostname === `${REACT_APP_NGROKLOCALHOST}` || window.location.hostname === 'localhost')
+          ? `${REACT_APP_BHARATPEORDERANDPAYMENTURL_LOCAL}`
+          : `${REACT_APP_BHARATPEORDERANDPAYMENTURL}`;
 
+      const response = await axios.get(
+        `${baseUrl}/api/bharatpeorder/vyaparstatus/${targetId}/${orderId}`,
+        {
+          params: { orderId, clientTxnId }
+        }
+      );
 
-      const res = await fetch(`${baseUrl}/api/bharatpeorder/status/${targetId}`);
-      const data = await res.json();
+      console.log('Polling status order id ' + orderId + ' txn id ' + clientTxnId);
+      console.log(' ' + JSON.stringify(response.data));
 
-      // Check if success from Backend DB or forwarded Vyapar response
-      if (data?.status === true && (data?.data?.status === 'success' || data?.orderStatus === 'success')) {
+      const data = response.data;
+      if (data !==undefined  && ( data?.status === 'success' || data?.orderStatus === 'success')) {
         setPaymentStatus('success');
-        // Redirect automatically to the success page
-        window.location.href = `/vyaparbharatpesuccess?order_id=${orderId}&clientTxnId=${ clientTxnId}`;
+        window.location.href = `/vyaparbharatpesuccess?order_id=${orderId}&clientTxnId=${clientTxnId}`;
+      }
+      else if (data?.status === true && (data?.data?.status === 'success' || data?.orderStatus === 'success')) {
+        setPaymentStatus('success');
+        window.location.href = `/vyaparbharatpesuccess?order_id=${orderId}&clientTxnId=${clientTxnId}`;
+      } else if (data?.data?.status === 'expired') {
+        setPaymentStatus('expired');
+        setQrStatus('expired');
       } else if (data?.data?.status === 'failed') {
         setPaymentStatus('failed');
+      } else {
+        setPaymentStatus('pending');
       }
     } catch (err) {
-      console.error('Polling error checking order status:', err);
+      console.error('Polling error checking order status:', JSON.stringify(err));
     }
   }, [orderId, clientTxnId]);
 
   // -------------------------------------------------------------
-  // 2. Real-Time 120-Second Countdown Timer Hook
+  // 2. Primary 120-Second QR Active Window Timer Hook
   // -------------------------------------------------------------
   useEffect(() => {
     if (!isOpen || paymentStatus === 'success') return;
@@ -96,7 +122,29 @@ export default function BharatPePaymentModal({
   }, [isOpen, paymentStatus]);
 
   // -------------------------------------------------------------
-  // 3. Polling Interval Hook (Runs every 3 seconds while open)
+  // 3. Post-Expiry 50-Second Auto-Sync Countdown Hook
+  // -------------------------------------------------------------
+  useEffect(() => {
+    if (!isOpen || !isTimedOut || paymentStatus === 'success') return;
+
+    setSyncTimeLeft(50); // Reset sync countdown when entering post-expiry view
+
+    const syncTimer = setInterval(() => {
+      setSyncTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(syncTimer);
+          handleRedirectToCart(); // Stop polling & move user to /cart after 50s
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(syncTimer);
+  }, [isOpen, isTimedOut, paymentStatus, handleRedirectToCart]);
+
+  // -------------------------------------------------------------
+  // 4. Polling Interval Hook (Runs every 3 seconds while open)
   // -------------------------------------------------------------
   useEffect(() => {
     if (!isOpen || paymentStatus === 'success') return;
@@ -134,7 +182,7 @@ export default function BharatPePaymentModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose}
+          onClick={handleRedirectToCart}
           className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
         />
 
@@ -148,7 +196,7 @@ export default function BharatPePaymentModal({
           {/* Blue Header */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 text-white text-center relative">
             <button
-              onClick={onClose}
+              onClick={handleRedirectToCart}
               className="absolute top-4 right-4 p-1 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition"
             >
               <X className="w-5 h-5" />
@@ -174,7 +222,7 @@ export default function BharatPePaymentModal({
                     : 'bg-amber-50 border-amber-200/60 text-amber-700'
                 }`}>
                   <Clock className="w-3.5 h-3.5 animate-pulse" />
-                  {isTimedOut ? 'Auto-Sync Active' : `Expires in ${formatSeconds(timeLeft)}`}
+                  {isTimedOut ? `Auto-Redirecting in ${syncTimeLeft}s` : `Expires in ${formatSeconds(timeLeft)}`}
                 </div>
               )}
             </div>
@@ -209,8 +257,11 @@ export default function BharatPePaymentModal({
 
                 <div className="space-y-1">
                   <h3 className="text-base font-bold text-slate-800">Fetching Payment Status</h3>
-                  <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                  <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
                     We are verifying your transaction with Vyapar Gateway & BharatPe. If you completed payment, please remain on this screen.
+                  </p>
+                  <p className="text-[11px] text-blue-600 font-semibold pt-1">
+                    Auto-closing session in <span className="font-mono font-bold">{syncTimeLeft}s</span>
                   </p>
                 </div>
 
@@ -225,10 +276,7 @@ export default function BharatPePaymentModal({
                   </button>
 
                   <button
-                    onClick={() => {
-                      if (onOrderExpired) onOrderExpired();
-                      onClose();
-                    }}
+                    onClick={handleRedirectToCart}
                     className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition"
                   >
                     <RotateCcw className="w-3.5 h-3.5" /> Cancel or Try Again

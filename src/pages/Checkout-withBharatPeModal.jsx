@@ -20,6 +20,7 @@ import GPayButtonRazor from './GPayButtonRazor';
 //import BharatPePaymentModal from './BharatPePaymentModal';
 //import BharatPePaymentModal from './BharatPePaymentModalExpire';
 import BharatPePaymentModal from './BharatPePaymentModalPolling';
+import QrCodeExpiredModal from './QrCodeExpiredModal';
 import GooglePayButton from '@google-pay/button-react';
 import { showModal as modalShow, showError } from '../components/common/service/ModalService';
 import { useModal } from '../providers/ModalProvider';
@@ -604,8 +605,16 @@ export default function Checkout() {
     
   };
   const handleClearOrder = () => {
-    setActiveOrderData(null);
-    localStorage.removeItem(STORAGE_KEY);
+    try { 
+       console.log('Checkout component :: Checkout-withBharaPeModal handleClearOrder from BharatPePaymentModalPolling ')
+       setActiveOrderData(null);
+       localStorage.removeItem(STORAGE_KEY);
+
+    }catch( cherr){ 
+
+      console.log('Checkout :: Checkout-withBharaPeModal handleClearOrder component not available ')
+    }
+   
   };
   const openPhomePeIFrame = () => {
     if (window.PhonePeCheckout !== undefined) {
@@ -875,6 +884,8 @@ export default function Checkout() {
         responseState={responseState}
         orderResponseData={orderData}
       /> */} 
+
+      {activeOrderData !==null ? ( 
        <BharatPePaymentModal
         isOpen={isBharatPeModalOpen}
         onClose={() => setIsBharatPeModalOpen(false)}
@@ -882,7 +893,16 @@ export default function Checkout() {
         responseState={responseState}
         orderResponseData={orderData}  orderData={activeOrderData}
         onOrderExpired={handleClearOrder}
-      />
+      />) : ( 
+          <QrCodeExpiredModal 
+            isOpen={isBharatPeModalOpen}
+  onClose={() => console.log('QR Close')}
+  orderId={orderData?.data?.order_id || responseState?.orderId}
+  amount={orderData?.amount || orderData?.bharatPeOrder?.payment?.amount || '0.00'}
+  onRetry={() => console.log('On Retry')}
+          />
+         
+      )}
       
        </>
       
