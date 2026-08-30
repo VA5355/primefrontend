@@ -203,7 +203,7 @@ const values=[
           <div className="prime-hero-image justify-between gap-1 ">   {/* No working className="prime-hero-image-reveal"  className="prime-hero-image-element"*/} <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={s.image}
-                  
+                  className="prime-hero-image-reveal"
                   initial={{
                     clipPath: "inset(0 100% 0 0)",
                   }}
@@ -221,7 +221,7 @@ const values=[
                   <img
                     src={s.image}
                     alt={s.title}
-                  
+                  className="prime-hero-image-element"
                     draggable="false"
                   />
                 </motion.div>

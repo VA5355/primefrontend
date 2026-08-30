@@ -282,17 +282,17 @@ a {
 }
  /* No working , still bluer images */ 
 .prime-hero-image-reveal {
-  position: absolute;
+  /*position: absolute;*/
   inset: 0;
 
   width: 100%;
   height: 100%;
 
-  overflow: hidden;
+ /* overflow: hidden;*/
 }
  /* No working , still bluer images ,   animate={{ clipPath: "inset(0 0% 0 0)",  }} */ 
 .prime-hero-image-element {
-  position: absolute;
+   /*position: absolute;*/
   inset: 0;
 
   display: block;
@@ -774,7 +774,7 @@ a {
 
 
 /* Applies to viewports between 769px and 1023px (inclusive) width <= 1546px)*/
-@media (max-width: 900px)  {
+@media (width <= 1546px)  {
   .prime-site {
     grid-template-columns: 1fr;
   }
@@ -872,13 +872,15 @@ a {
     position: relative;
     inset: auto;
     width: 100%;
-    height: 240px;
+    height: 250px; 
+   /* height: 240px; */
   }
 
   .prime-hero-image img {
     position: relative;
     left: 0;
-    top: 0;
+    top:1%;
+    /*top: 0;*/
     width: 100%;
     height: 100%;
     margin-top: 0;
@@ -897,6 +899,7 @@ a {
 
   .prime-hero-copy {
      position: absolute;
+     top : 20%;
     width: 100%;
    /* min-height: auto;*/
     min-height: 620px;
