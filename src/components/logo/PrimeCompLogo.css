@@ -1,0 +1,397 @@
+/* ============================================================
+   PRIME COMPUTER LOGO
+============================================================ */
+
+.prime-comp-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+
+/* ============================================================
+   ROTATING GEAR
+   Only the outer gear rotates.
+   Center emblem remains static.
+============================================================ */
+
+.gear-spin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: primeGearSpin 6s linear infinite;
+}
+
+@keyframes primeGearSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* Accessibility:
+   respect reduced-motion preferences.
+============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .gear-spin {
+    animation: none;
+  }
+}
+
+
+/* ============================================================
+   OUTER BRAND COMPONENT
+============================================================ */
+
+.prime-brand-logo {
+  display: inline-flex;
+  align-items: center;
+
+  cursor: pointer;
+
+  color: inherit;
+}
+
+
+/* ============================================================
+   LOGO + TEXT CONTAINER
+============================================================ */
+
+.prime-brand-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+/* ============================================================
+   LOGO WRAPPER
+============================================================ */
+
+.prime-logo-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  transition:
+    width 0.25s ease,
+    height 0.25s ease;
+}
+
+
+/* ============================================================
+   LOGO SIZE VARIANTS
+============================================================ */
+
+.prime-logo-xssmall {
+  width: 16px;
+  height: 16px;
+}
+
+.prime-logo-small {
+  width: 32px;
+  height: 32px;
+}
+
+.prime-logo-default {
+  width: 48px;
+  height: 48px;
+}
+
+.prime-logo-large {
+  width: 48px;
+  height: 48px;
+}
+
+.prime-logo-text {
+  font-family: "Anton", sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: -0.035em;
+  line-height: 0.88;
+  /*font-size: 5rem;*/
+   
+}
+
+.prime-logo-text .black {
+  color: #111111;
+}
+
+.prime-logo-text .orange {
+  color: #e94e1b;
+}
+
+/* ============================================================
+   LOGO HOVER
+   Equivalent to:
+   group-hover:rotate-12
+============================================================ */
+
+.prime-brand-logo:hover .logo {
+  transform: rotate(12deg);
+}
+
+.logo {
+  transition: transform 0.3s ease;
+}
+
+
+/* ============================================================
+   BRAND HEADING
+============================================================ */
+
+.prime-brand-heading {
+  margin: 0;
+
+  padding: 0;
+
+  line-height: 1;
+
+  font-weight: 700;
+
+  letter-spacing: -0.025em;
+}
+
+
+/* ============================================================
+   BRAND COPY
+============================================================ */
+
+.prime-brand-copy {
+  display: flex;
+  flex-direction: column;
+
+  margin-left: 8px;
+
+  min-width: 0;
+}
+
+
+/* ============================================================
+   MAIN "PRIME COMPUTER & NETWORK"
+
+   Equivalent to:
+   font-bold
+   bg-gradient-to-r
+   from-amber-950
+   via-orange-600
+   to-amber-500
+   bg-clip-text
+   text-transparent
+   transition-all
+   group-hover:scale-105
+   whitespace-nowrap
+============================================================ */
+
+.prime-brand-title {
+  display: inline-block;
+
+  width: max-content;
+  max-width: none;
+
+  white-space: nowrap;
+
+  font-weight: 700;
+
+  background-image:
+    linear-gradient(
+      to right,
+      #451a03,
+      #ea580c,
+      #f59e0b
+    );
+
+  background-clip: text;
+  -webkit-background-clip: text;
+
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+
+  transition:
+    transform 0.25s ease,
+    filter 0.25s ease;
+
+  transform-origin: left center;
+}
+
+
+/* ============================================================
+   HOVER SCALE
+   Equivalent to:
+   group-hover:scale-105
+============================================================ */
+
+.prime-brand-logo:hover .prime-brand-title {
+  transform: scale(1.05);
+}
+
+
+/* ============================================================
+   SUBTITLE
+============================================================ */
+
+.prime-brand-subtitle {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #6b7280;
+
+  font-size: 12px;
+
+  line-height: 1.2;
+
+  font-weight: 400;
+
+  white-space: nowrap;
+
+  transition:
+    color 0.25s ease;
+}
+
+
+/* ============================================================
+   TITLE SIZE VARIANTS
+
+   Original Tailwind equivalent:
+
+   xssmall → text-xs
+   small   → text-xl
+   default → text-2xl
+   large   → text-3xl
+============================================================ */
+
+.prime-brand-title-xssmall {
+  font-size: 12px;
+}
+
+.prime-brand-title-small {
+  font-size: 20px;
+}
+
+.prime-brand-title-default {
+  font-size: 24px;
+}
+
+.prime-brand-title-large {
+  font-size: 30px;
+}
+
+
+/* ============================================================
+   DESKTOP DEFAULT
+============================================================ */
+
+@media (min-width: 768px) {
+
+  .prime-brand-title-xssmall,
+  .prime-brand-title-small,
+  .prime-brand-title-default,
+  .prime-brand-title-large {
+    font-size: 24px;
+  }
+
+}
+
+
+/* ============================================================
+   DARK MODE
+
+   Matches the original Tailwind:
+
+   dark:from-orange-500
+   dark:via-amber-400
+   dark:to-yellow-300
+============================================================ */
+
+@media (prefers-color-scheme: dark) {
+
+  .prime-brand-title {
+    background-image:
+      linear-gradient(
+        to right,
+        #f97316,
+        #fbbf24,
+        #fde047
+      );
+  }
+
+  .prime-brand-subtitle {
+    color: #9ca3af;
+  }
+
+}
+
+
+/* ============================================================
+   RESPONSIVE MOBILE
+============================================================ */
+
+@media (max-width: 767px) {
+
+  .prime-brand-inner {
+    gap: 8px;
+  }
+
+  .prime-logo-small {
+    width: 32px;
+    height: 32px;
+  }
+
+  .prime-brand-copy {
+    margin-left: 4px;
+  }
+
+  .prime-brand-title {
+    font-size: 20px;
+  }
+
+  .prime-brand-subtitle {
+    font-size: 10px;
+  }
+
+}
+
+
+/* ============================================================
+   VERY SMALL MOBILE
+============================================================ */
+
+@media (max-width: 380px) {
+
+  .prime-brand-title {
+    font-size: 17px;
+  }
+
+  .prime-brand-subtitle {
+    font-size: 9px;
+  }
+
+}
+
+
+/* ============================================================
+   EXTRA SAFETY FOR LONG BRAND NAME
+
+   Prevent the logo component itself from causing a page-wide
+   horizontal scrollbar.
+============================================================ */
+
+.prime-brand-logo {
+  max-width: 100%;
+}
+
+.prime-brand-inner {
+  max-width: 100%;
+}
+
+.prime-brand-copy {
+  overflow: visible;
+}

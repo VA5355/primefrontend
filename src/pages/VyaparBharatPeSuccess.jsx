@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -13,59 +13,135 @@ import {
   AlertCircle,
   X
 } from 'lucide-react';
+import axios from "axios";
+import { 
+  REACT_APP_BHARATPEORDERANDPAYMENTURL, 
+  REACT_APP_BHARATPEORDERANDPAYMENTURL_LOCAL, 
+  REACT_APP_NGROKLOCALHOST 
+} from '../libs/client';
 import { useCart } from '../context/cart';
 import PageContainer from '../components/layout/PageContainer';
 import PageHeader from '../components/layout/PageHeader';
 import Button from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
-import { formatCurrency } from '../lib/utils';
 import usePageTitle from '../hooks/usePageTitle';
 
-export default function VyaparBharatPeSuccess() {
+export default function VyaparBharatPeSuccess({
+  amount = 150.50,
+  apiKey = process.env.REACT_APP_VYAPAR_PROD_KEY
+}) {
   usePageTitle('Payment Confirmation');
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [, setCart] = useCart();
 
+  // Extract query parameters correctly from the URL string:
+  const queryOrderId = searchParams.get('order_id') || searchParams.get('orderId') || '';
+  const queryClientTxnId = searchParams.get('clientTxnId') || searchParams.get('client_txn_id') || searchParams.get('utr') || '';
+
+  const [paymentStatus, setPaymentStatus] = useState('verifying'); // 'verifying' | 'success' | 'failed' | 'timeout'
+  const [orderDetails, setOrderDetails] = useState(null);
+  const [createdAt, setCreatedAt] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(120); 
+  const [isChecking, setIsChecking] = useState(false);
+  const [inOrderId, setInOrderId] = useState(queryOrderId);
+  const [inClientTxnId, setInClientTxnId] = useState(queryClientTxnId);
   const [showModal, setShowModal] = useState(false);
-  const [paymentDetails, setPaymentDetails] = useState({
-    orderId: '',
-    paymentId: '',
-    amount: 0,
-    createdAt: '',
-    description: '',
-    status: 'pending'
-  });
 
+  // Function to call Check Order Status API
+  const checkOrderStatus = useCallback(async (targetOrderId, targetTxnId) => {
+    // Prevent execution if parameters are missing
+    if (!targetOrderId || !targetTxnId) {
+      console.warn('Skipping API call: orderId or clientTxnId is missing.');
+      return;
+    }
+
+    setIsChecking(true);
+    try {
+      const baseUrl =
+        (window.location.hostname === `${REACT_APP_NGROKLOCALHOST}` || window.location.hostname === 'localhost')
+          ? `${REACT_APP_BHARATPEORDERANDPAYMENTURL_LOCAL}`
+          : `${REACT_APP_BHARATPEORDERANDPAYMENTURL}`;
+
+      // Axios call with parameters properly injected into the path
+      const response = await axios.get(
+        `${baseUrl}/api/bharatpeorder/vyaparstatus/${targetTxnId}/${targetOrderId}`,
+        {
+          params: { orderId: targetOrderId, clientTxnId: targetTxnId }
+        }
+      );
+
+      // Axios automatically parses JSON into response.data
+      const result = response.data;
+
+      if (result.status && (result.data?.status === 'success' || result.data?.status === 'COMPLETED')) {
+        setOrderDetails(result.data);
+        setCreatedAt(new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
+        setPaymentStatus('success');
+      } else if (result.data?.status === 'failed' || result.data?.status === 'FAILURE') {
+        setPaymentStatus('failed');
+      }
+    } catch (error) {
+      console.error('Error fetching order status:', error);
+    } finally {
+      setIsChecking(false);
+    }
+  }, []);
+
+  // Sync state and run initial verification when searchParams change
   useEffect(() => {
-    // 1. Extract params passed back by Razorpay or custom redirect
-    const razorpayPaymentId = searchParams.get('utr') || searchParams.get('razorpay_payment_id') || 'TBD (Order in Processing)';
-    const razorpayOrderId = searchParams.get('order_id') || searchParams.get('razorpay_order_id') || 'ORD_' + Math.random().toString(36).substring(2, 9).toUpperCase();
-    const amountParam = parseFloat(searchParams.get('amount')) || 2806.92;
-    const statusParam = searchParams.get('status') || 'success';
+    if (queryOrderId && queryClientTxnId) {
+      console.log(`Fetched URL Query Params -> order_id: ${queryOrderId}, clientTxnId: ${queryClientTxnId}`);
+      setInOrderId(queryOrderId);
+      setInClientTxnId(queryClientTxnId);
+      checkOrderStatus(queryOrderId, queryClientTxnId);
+    } else {
+      console.warn('Unable to read query params: order_id and clientTxnId');
+    }
+  }, [queryOrderId, queryClientTxnId, checkOrderStatus]);
 
-    // 2. Clear shopping cart upon successful payment workflow completion
+  // 120-Second Countdown Timer
+  useEffect(() => {
+    if (paymentStatus !== 'verifying') return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setPaymentStatus('timeout');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [paymentStatus]);
+
+  // Automatic Polling every 4 seconds until complete or timeout
+  useEffect(() => {
+    if (paymentStatus !== 'verifying' || !queryOrderId || !queryClientTxnId) return;
+
+    const interval = setInterval(() => {
+      checkOrderStatus(queryOrderId, queryClientTxnId);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [paymentStatus, queryOrderId, queryClientTxnId, checkOrderStatus]);
+
+  // Clear Cart & 30-sec Modal timer
+  useEffect(() => {
     localStorage.removeItem('cart');
-    localStorage.setItem('razorpayorderstatus', statusParam);
+    localStorage.setItem('razorpayorderstatus', paymentStatus);
     setCart([]);
 
-    // 3. Populate payment summary details
-    setPaymentDetails({
-      orderId: razorpayOrderId,
-      paymentId: razorpayPaymentId,
-      amount: amountParam,
-      createdAt: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-      description: 'Order placed via Direct Merchant UPI (Prime Computer Network)',
-      status: statusParam
-    });
-
-    // 4. Delayed Payment Portal Verification Modal (Appears after 30 seconds)
-    const timer = setTimeout(() => {
+    const modalTimer = setTimeout(() => {
       setShowModal(true);
     }, 30000);
 
-    return () => clearTimeout(timer);
-  }, [searchParams, setCart]);
+    return () => clearTimeout(modalTimer);
+  }, [setCart, paymentStatus]);
 
   return (
     <PageContainer>
@@ -74,14 +150,12 @@ export default function VyaparBharatPeSuccess() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        {/* Updated Banner to match the solid deep-purple layout */}
         <PageHeader
           title="Payment Confirmation"
           subtitle="Complete payment status"
           className="bg-[#4f39bd] text-white rounded-2xl p-8 mb-6 shadow-md"
         />
 
-        {/* Navigation back option */}
         <button
           onClick={() => navigate('/shop')}
           className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-indigo-600 mb-6 transition-colors"
@@ -95,39 +169,87 @@ export default function VyaparBharatPeSuccess() {
           <div className="lg:col-span-2 space-y-6">
             <Card className="shadow-sm border border-gray-100 dark:border-gray-800">
               <CardContent className="p-6 space-y-6">
-                <div className="flex items-center gap-2 text-gray-900 dark:text-gray-100 font-semibold text-lg border-b pb-4">
-                  <CreditCard className="h-5 w-5 text-indigo-600" />
-                  Payment Summary
+                 <div className="space-y-4 text-gray-700 dark:text-gray-300">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800">
+                     <span  className="font-medium  "> <CreditCard className="h-5 w-5 text-indigo-600" />
+                        <span  className="  font-semibold text-lg "> Payment Summary </span>      
+                     </span>
+                     <span  className="font-medium gap-1 ">  
+                       Status :
+                  
+                        {paymentStatus !== 'success' ? (
+
+                          <Button
+                        
+                        className="w-full bg-[#fb8c4d] hover:bg-[#f26e22] text-white font-medium py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                        size="lg"
+                      >
+                        Processing 
+                        
+                      </Button>
+                        ) : (
+
+                          <Button
+                        
+                        className="w-full bg-[#ADFF2F] hover:bg-[#32CD32] text-white font-medium py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                        size="lg"
+                      >
+                        Payment Success 
+                        
+                      </Button>
+                        ) }
+                     </span>
+
+                   </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800">
+                    
+                   
+               </div>
+                 
                 </div>
 
                 <div className="space-y-4 text-gray-700 dark:text-gray-300">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800">
                     <span className="font-medium text-gray-500 dark:text-gray-400">Order ID:</span>
-                    <span className="font-mono text-gray-900 dark:text-gray-100 font-bold">{paymentDetails.orderId}</span>
+                    <span className="font-mono text-gray-900 dark:text-gray-100 font-bold">
+                      {inOrderId || 'Processing...'}
+                    </span>
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800">
                     <span className="font-medium text-gray-500 dark:text-gray-400">Txn Reference:</span>
-                    <span className="font-mono text-amber-600 dark:text-amber-400">{paymentDetails.paymentId}</span>
+                    <span className="font-mono text-amber-600 dark:text-amber-400">
+                      {inClientTxnId || 'Processing...'}
+                    </span>
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800">
                     <span className="font-medium text-gray-500 dark:text-gray-400">Payment Amount:</span>
-                    <span className="font-semibold text-indigo-600">{formatCurrency(paymentDetails.amount)}</span>
+                    <span className="font-semibold text-indigo-600">
+                      ₹{(orderDetails?.amount || amount).toFixed(2)}
+                    </span>
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800">
                     <span className="font-medium text-gray-500 dark:text-gray-400">Created At:</span>
-                    <span className="text-sm">{paymentDetails.createdAt}</span>
+                    <span className="text-sm">{createdAt || 'Pending Verification...'}</span>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800">
+                    <span className="text-gray-500 dark:text-gray-400">Merchant</span>
+                    <span className="text-gray-900 dark:text-gray-100 font-medium">
+                      {orderDetails?.merchant_name || "Prime Computer & Network"}
+                    </span>
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between py-2">
-                    <span className="font-medium text-gray-500 dark:text-gray-400">Description:</span>
-                    <span className="text-sm text-gray-600 dark:text-gray-300 max-w-xs sm:text-right">{paymentDetails.description}</span>
+                    <span className="text-gray-500 dark:text-gray-400">Paid Via</span>
+                    <span className="text-gray-900 dark:text-gray-100 font-medium uppercase">
+                      {orderDetails?.merchant_upi_id || "UPI Mobile"}
+                    </span>
                   </div>
                 </div>
 
-                {/* Footer Security Highlights */}
                 <div className="pt-6 border-t border-gray-100 dark:border-gray-800 flex items-center justify-center gap-6 text-xs text-gray-500">
                   <span className="flex items-center gap-1"><ShieldCheck className="h-4 w-4 text-emerald-500" /> Secure Payment</span>
                   <span className="flex items-center gap-1"><Truck className="h-4 w-4 text-indigo-500" /> Fast Delivery</span>
@@ -169,7 +291,7 @@ export default function VyaparBharatPeSuccess() {
         </div>
       </motion.div>
 
-      {/* 30-Second Delayed Payment Verification Modal */}
+      {/* 30-Second Verification Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-gray-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 dark:border-gray-800 relative">

@@ -163,11 +163,13 @@ export default function CollectionView() {
       {/* Breadcrumb */}
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <nav className="flex items-center gap-2 text-sm">
+             {/** now points to <PrimeComputerHome/> */}
           <button
             onClick={() => navigate('/')}
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-1"
           >
-            <Home className="h-4 w-4" />
+           {/* } <Home className="h-4 w-4" />*/}
+           <Home className="h-4 w-4" />
             Home
           </button>
           <ChevronRight className="h-4 w-4 text-gray-400" />

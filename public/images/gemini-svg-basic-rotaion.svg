@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 65 65" width="65" height="65">
+  <defs>
+    <style>
+      /* Smooth continuous rotation for the outer gear only */
+      @keyframes spinGearOnly {
+        0%   { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .spinning-gear {
+        transform-origin: 32.5px 32.5px;
+        animation: spinGearOnly 6s linear infinite;
+      }
+    </style>
+  </defs>
+
+  <g id="pre-school-logo-icon">
+    
+    <!-- 1. SPINNING OUTER ORANGE GEAR (ROTATING LAYER) -->
+    <g class="spinning-gear">
+      <!-- Outer Gear Body -->
+      <path d="
+        M 32.5,4.5 
+        L 36,4.5 L 37.2,8 L 41.5,9.2 L 44.5,7 L 47.5,9.2 L 46.2,13 L 49.8,15.5 L 53.5,14 L 55.5,17.2 L 52.8,20.2 L 55.2,23.8 L 59,24.2 L 59.8,28 L 56.5,30.2 L 56.5,34.8 L 59.8,37 L 59,40.8 L 55.2,41.2 L 52.8,44.8 L 55.5,47.8 L 53.5,51 L 49.8,49.5 L 46.2,52 L 47.5,55.8 L 44.5,58 L 41.5,55.8 L 37.2,57 L 36,60.5 L 29,60.5 L 27.8,57 L 23.5,55.8 L 20.5,58 L 17.5,55.8 L 18.8,52 L 15.2,49.5 L 11.5,51 L 9.5,47.8 L 12.2,44.8 L 9.8,41.2 L 6,40.8 L 5.2,37 L 8.5,34.8 L 8.5,30.2 L 5.2,28 L 6,24.2 L 9.8,23.8 L 12.2,20.2 L 9.5,17.2 L 11.5,14 L 15.2,15.5 L 18.8,13 L 17.5,9.2 L 20.5,7 L 23.5,9.2 L 27.8,8 L 29,4.5 Z
+      " fill="#e04a1f" stroke="#c43b14" stroke-width="0.8" />
+      
+      <!-- Outer Ring White Border Inner Circle -->
+      <circle cx="32.5" cy="32.5" r="20" fill="#ffffff" stroke="#c43b14" stroke-width="1" />
+    </g>
+
+    <!-- 2. STATIC CENTER EMBLEM (DOES NOT ROTATE) -->
+    <g id="center-pc-logo">
+      <!-- Orange Diamond/Hexagon Background Accent -->
+      <polygon points="21,32.5 25,23 40,23 44,32.5 40,42 25,42" fill="#e04a1f" opacity="0.9" />
+      <polygon points="23,32.5 26,24.5 39,24.5 42,32.5 39,40.5 26,40.5" fill="#ffffff" />
+      
+      <!-- FITTED 'Pc' MONOGRAM (Scaled and Centered) -->
+      <g transform="translate(25.5, 25.5) scale(0.08)" fill="#1c1917">
+        <!-- CAPITAL LETTER 'P' -->
+        <path d="
+          M 20,158 
+          L 20,146 L 34,146 L 34,34 L 20,34 L 20,22 L 78,22 
+          C 102,22 118,34 118,57 
+          C 118,80 102,92 78,92 
+          L 58,92 L 58,146 L 72,146 L 72,158 Z 
+          M 58,34 L 58,80 L 76,80 
+          C 90,80 96,72 96,57 
+          C 96,42 90,34 76,34 Z
+        " />
+
+        <!-- SMALLER ARROW-STYLED 'c' -->
+        <path d="
+          M 195,51
+         
+          C 178,57 172,52 163,52 
+          C 152,52 144,65 144,92 
+          C 144,119 152,132 163,132 
+          C 172,132 178,127 182,119 
+         
+          C 190,148 178,156 162,156 
+          C 139,156 124,136 124,92 
+          C 124,48 139,28 162,28 
+          C 178,28 190,36 195,52 Z
+        " />
+      </g>
+
+     
+    </g>
+
+  </g>
+</svg>

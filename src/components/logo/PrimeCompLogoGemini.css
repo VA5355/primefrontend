@@ -1,0 +1,46 @@
+/* Continuous SVG Gear Spin */
+.gear-spin-layer {
+  transform-origin: 32.5px 32.5px; /* Center point of 65x65 viewBox */
+  animation: spin-gear 8s linear infinite;
+}
+
+@keyframes spin-gear {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Image Text Styles */
+.prime-brand-title-img {
+  display: block;
+  line-height: 1;
+}
+
+.brand-text-image {
+  height: auto;
+  max-height: 36px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+@media (max-width: 767px) {
+  .brand-text-image {
+    max-height: 28px;
+  }
+}
+
+.prime-brand-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.prime-brand-subtitle {
+  font-size: 0.75rem;
+  color: #666;
+  margin-top: 2px;
+}

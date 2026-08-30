@@ -1,0 +1,165 @@
+.prime-gear-logo {
+  position: relative;
+
+  width: var(--prime-gear-size);
+  aspect-ratio: 1031 / 1029;
+
+  display: block;
+
+  overflow: visible;
+
+  isolation: isolate;
+}
+
+/* ============================================================
+   STATIC BASE
+============================================================ */
+
+.prime-gear-base {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: contain;
+
+  user-select: none;
+  pointer-events: none;
+}
+
+
+/* ============================================================
+   ROTATING SVG OVERLAY
+============================================================ */
+
+.prime-gear-overlay {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  overflow: visible;
+
+  pointer-events: none;
+}
+
+
+/* ============================================================
+   ROTATING GEAR
+============================================================ */
+
+.prime-gear-spin {
+  transform-box: view-box;
+
+  transform-origin: 50% 50%;
+
+  animation:
+    primeGearRotation
+    var(--prime-gear-duration)
+    linear
+    infinite;
+
+  will-change: transform;
+}
+
+
+@keyframes primeGearRotation {
+
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+
+/* ============================================================
+   STATIC CENTER
+   --------------------------------
+   This is deliberately placed above
+   the rotating gear overlay.
+============================================================ */
+
+.prime-gear-center {
+  position: absolute;
+
+  /*
+   * Same inner diameter as the mask.
+   * This covers the center completely.
+   */
+  left: 32.4%;
+  top: 32.4%;
+
+  width: 35.2%;
+  height: 35.2%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  overflow: hidden;
+
+  z-index: 5;
+
+  pointer-events: none;
+}
+
+
+.prime-gear-center img {
+  position: absolute;
+
+  width: 293%;
+
+  height: 293%;
+
+  max-width: none;
+
+  object-fit: contain;
+
+  user-select: none;
+
+  /*
+   * Counter the crop so the centre of the
+   * original PNG aligns perfectly.
+   */
+  left: -96.5%;
+  top: -96.5%;
+}
+
+
+/* ============================================================
+   ACCESSIBILITY
+============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .prime-gear-spin {
+    animation: none;
+  }
+
+}
+
+
+/* ============================================================
+   SMALL DEVICES
+============================================================ */
+
+@media (max-width: 600px) {
+
+  .prime-gear-logo {
+    --prime-gear-size: min(88vw, 430px);
+  }
+
+}

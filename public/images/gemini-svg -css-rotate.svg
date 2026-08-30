@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 65 65" width="65" height="65">
+  <defs>
+    <style>
+      /* Smooth continuous 360-degree rotation for the gear only */
+      @keyframes spinGearOnly {
+        0%   { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .gear-spin {
+        transform-origin: 32.5px 32.5px;
+        animation: spinGearOnly 6s linear infinite;
+      }
+    </style>
+  </defs>
+
+  <g id="logo-container">
+    <!-- 1. ROTATING GEAR LAYER (Image 1) -->
+    <g class="gear-spin">
+      <image 
+        href="./gear-trans.png" 
+        x="0" 
+        y="0" 
+        width="65" 
+        height="65" 
+        preserveAspectRatio="xMidYMid meet"
+      />
+    </g>
+
+    <!-- 2. STATIC CENTER EMBLEM LAYER (Image 2 - No Rotation) -->
+    <g id="static-center-logo">
+      <image 
+        href="./pc-logo.png" 
+        x="13" 
+        y="13" 
+        width="39" 
+        height="39" 
+        preserveAspectRatio="xMidYMid meet"
+      />
+    </g>
+  </g>
+</svg>

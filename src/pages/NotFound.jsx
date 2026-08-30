@@ -162,7 +162,7 @@ export default function NotFound() {
               <ArrowLeft className="h-4 w-4" />
               Go Back
             </Button>
-
+                 {/** now points to <PrimeComputerHome/> */}
             <Button
               onClick={() => navigate('/')}
               className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
