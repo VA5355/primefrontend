@@ -7,7 +7,7 @@ import { useSearch } from '../context/search';
 import axios from 'axios';
  import CookieButton from './PrimeCookieButton';
  import GradientShadowLine from './GradientShadowLine';
- import PlaneLandingLogo from './PlaneLandingLogo';
+ //import PlaneLandingLogo from './PlaneLandingLogo';
  import PrimeHomeAllProducts from '../components/home/PrimeHomeAllProducts';
  import TalkToUsCards from '../components/cards/TalkToUsCards';
  import QuotationGenerator from "../components/quote/QuotationGenerator";
