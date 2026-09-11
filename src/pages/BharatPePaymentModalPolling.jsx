@@ -97,6 +97,56 @@ export default function BharatPePaymentModal({
       console.error('Polling error checking order status:', JSON.stringify(err));
     }
   }, [orderId, clientTxnId]);
+  
+
+  
+  // -------------------------------------------------------------
+  // 1. Email Function: In case Order and Payment success send email  from Node.js Backend
+  // -------------------------------------------------------------
+  const emailOrderAndPaymentStatus = useCallback(async () => {
+    if (!orderId && !clientTxnId && paymentStatus !== 'success') return;
+
+    try {
+      const targetId = clientTxnId;
+      const baseUrl =
+        (window.location.hostname === `${REACT_APP_NGROKLOCALHOST}` || window.location.hostname === 'localhost')
+          ? `${REACT_APP_BHARATPEORDERANDPAYMENTURL_LOCAL}`
+          : `${REACT_APP_BHARATPEORDERANDPAYMENTURL}`;
+
+      const response = await axios.get(
+        `${baseUrl}/api/email/send-email/${targetId}/${orderId}`,
+        {
+          params: { orderId, clientTxnId }
+        }
+      );
+
+      console.log('Polling status order id ' + orderId + ' txn id ' + clientTxnId);
+      console.log(' ' + JSON.stringify(response.data));
+
+      const data = response.data;
+      if (data !==undefined  && ( data?.status === 'success' || data?.orderStatus === 'success')) {
+        setPaymentStatus('success');
+        window.location.href = `/vyaparbharatpesuccess?order_id=${orderId}&clientTxnId=${clientTxnId}`;
+      }
+      else if (data?.status === true && (data?.data?.status === 'success' || data?.orderStatus === 'success')) {
+        setPaymentStatus('success');
+
+       // start email notification process
+         
+        window.location.href = `/vyaparbharatpesuccess?order_id=${orderId}&clientTxnId=${clientTxnId}`;
+      } else if (data?.data?.status === 'expired') {
+        setPaymentStatus('expired');
+        setQrStatus('expired');
+      } else if (data?.data?.status === 'failed') {
+        setPaymentStatus('failed');
+      } else {
+        setPaymentStatus('pending');
+      }
+    } catch (err) {
+      console.error('Polling error checking order status:', JSON.stringify(err));
+    }
+  }, [orderId, clientTxnId]);
+
 
   // -------------------------------------------------------------
   // 2. Primary 120-Second QR Active Window Timer Hook

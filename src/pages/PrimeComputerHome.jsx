@@ -2,24 +2,35 @@ import React, { useEffect, useState, useRef  } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, ChevronLeft, ChevronRight, Clock3, Mail, MapPin, Menu, Navigation, Phone, Server, ShieldCheck, Smartphone, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Search,   Clock, TrendingUp, CheckCircle2, AlertCircle  } from 'lucide-react';
+import { Search,   Clock, TrendingUp, CheckCircle2, AlertCircle , Receipt  } from 'lucide-react';
 import { useSearch } from '../context/search';
 import axios from 'axios';
  import CookieButton from './PrimeCookieButton';
  import GradientShadowLine from './GradientShadowLine';
+ import PlaneLandingLogo from './PlaneLandingLogo';
+ import PrimeHomeAllProducts from '../components/home/PrimeHomeAllProducts';
+ import TalkToUsCards from '../components/cards/TalkToUsCards';
+ import QuotationGenerator from "../components/quote/QuotationGenerator";
 import './PrimeComputerHome.css';
+import TalkToUsCallUsHelp from './TalkToUsCallUsHelp';
 
 const ADDRESS='Pristine Grandeur, S No. 239, Shop No. 02, Near Meridian Ice-Cream, Opp. Riddhi Siddhi Avenue Gate, Wakad, Pune - 411057';
 const MAP_URL='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(ADDRESS);
 // AssembleDissemble.gif
 // powerpt-slide.gif powerpt-slide-new
 const slides=[
-  {eyebrow:'ARTISTIC • SOLUTIONS',title:'Gear Up Digitally',description:'State of art designs and faster.',image:'/assets/power-slide-animate.gif',badge:'Design Technology'},
-  {eyebrow:'PRIME COMPUTER • TECHNOLOGY SOLUTIONS',title:'Empowering Your Digital World',description:'Technology solutions designed to help businesses work smarter, safer and faster.',image:'/assets/hero-office-1.webp',badge:'Enterprise Technology'},
+ 
+  {eyebrow:'PRIME COMPUTER • TECHNOLOGY SOLUTIONS',title:'Empowering Your Digital World',description:'Technology solutions designed to help businesses work smarter, safer and faster.',image:'/assets/hero-office-1-new.webp',badge:'Enterprise Technology'},
+  {eyebrow:'STORE ADDRESS',title:'Digital Stack of inventories',description:'Prime location spot on , with porter services across hinjewadi, wakad 7 days a week.',image:'/assets/prime/Store-Address.png',badge:'Warhouse Address '},
+ 
   {eyebrow:'IT INFRASTRUCTURE',title:'Build a Technology Foundation That Scales',description:'Reliable infrastructure, support and modern computing solutions for growing teams.',image:'/assets/hero-office-2.webp',badge:'Infrastructure'},
+  {eyebrow:'SOFTWARE SOLUTIONS',title:'Leverage Device ,Install premium Software licensed',description:'Primary to Advanced packages with physical/subscription based.',image:'/assets/prime/Software.png',badge:'Software'},
   {eyebrow:'BUSINESS COMPUTING',title:'Professional Workstations. Practical Results.',description:'Laptops, desktops, workstations and peripherals selected around the way your team actually works.',image:'/assets/hero-office-3.webp',badge:'Business Computing'},
+  {eyebrow:'MORDERN TECH',title:'AI Tops/GPU RTX vRAM Rendering devices',description:'AI, AI-Agents all compatible processors/gpus from INEL/AMD/ARM.',image:'/assets/prime/Mordern-tech.png',badge:'Mordern Tech'},
   {eyebrow:'SECURITY & SUPPORT',title:'Keep Your People Productive',description:'From endpoint protection to troubleshooting and support, keep technology working when the business needs it.',image:'/assets/hero-office-4.webp',badge:'Support & Security'},
-  {eyebrow:'PRIME COMPUTER',title:'Technology Solutions With A Local Touch',description:'Personal service from Wakad, Pune with the professionalism expected from a technology partner.',image:'/assets/hero-office-5.webp',badge:'Wakad • Pune'}
+  {eyebrow:'BUSINESS ESSENTIALS',title:'Professional Elite',description:'On the go , best in class office/industrial/gaming/developer range laptops/mini/workstations.',image:'/assets/prime/Business-laptops.png',badge:'Business Demands'},
+  {eyebrow:'PRIME COMPUTER',title:'Technology Solutions With A Local Touch',description:'Personal service from Wakad, Pune with the professionalism expected from a technology partner.',image:'/assets/hero-office-5.webp',badge:'Wakad • Pune'},
+  {eyebrow:'ARTIFICIAL INTELLIGENCE',title:'Broadcasting Video Editing Graphics Productive Solutions',description:'AI Boards/Benchmark tutorial communication LARGE SCREEN, YOUTUBERS/CONTENT Creators paradise.',image:'/assets/prime/Artificial-Inteligency.png',badge:'AI Scalers'}
 ];
 const links=[{label:'Home',href:'#home'},{label:'About Us',href:'#about'},{label:'Services',href:'#services'},{label:'Contact Us',href:'#contact'}];
 
@@ -33,7 +44,8 @@ const links=[{label:'Home',href:'#home'},{label:'About Us',href:'#about'},{label
 const values=[
   {Icon:Server,title:'Business IT',text:'Computing, networking & infrastructure', },
   {Icon:ShieldCheck,title:'Security',text:'Practical protection for your business', },
-  {Icon:Clock3,title:'Responsive Support',text:'Help when your team needs it', }
+  {Icon:Clock3,title:'Responsive Support',text:'Help when your team needs it', },
+  {Icon:Receipt ,title:'Quotation',text:'Send us your Requirement', }
 ];
 
 export default function PrimeComputerHome(){
@@ -96,6 +108,14 @@ const handlePrimeValueSupport =   () =>  {
          handleFakeCall();
       }
 } 
+const handlePrimeValueQuote =   () =>  {
+    console.log('handlePrimeValueQuote called ');
+
+    setQuotationOpen(true)
+     if(!isRepeatRender){
+         handleFakeCall();
+      }
+} 
     const handleRecentSearch = (search) => {
     setKeyword(search);
     handleSubmit({ preventDefault: () => {} });
@@ -128,7 +148,8 @@ const handlePrimeValueSupport =   () =>  {
 const values=[
   {Icon:Server,title:'Business IT',text:'Computing, networking & infrastructure', valueClicked:handlePrimeValueBusiness},
   {Icon:ShieldCheck,title:'Security',text:'Practical protection for your business', valueClicked:handlePrimeValueSecurity},
-  {Icon:Clock3,title:'Responsive Support',text:'Help when your team needs it',valueClicked:handlePrimeValueSupport}
+  {Icon:Clock3,title:'Responsive Support',text:'Help when your team needs it',valueClicked:handlePrimeValueSupport},
+    {Icon:Receipt ,title:'Quotation',text:'Send us your Requirement', valueClicked:handlePrimeValueQuote}
 ];
 
 
@@ -145,7 +166,7 @@ const values=[
   const nav=(e,href)=>{if(href.startsWith('#')){e.preventDefault();setMobile(false);document.querySelector(href)?.scrollIntoView({behavior:'smooth'});}};
   const go=d=>setActive((active+d+slides.length)%slides.length);
   const s=slides[active];
-
+  const [quotationOpen, setQuotationOpen] = useState(false);
 
 
 
@@ -199,8 +220,13 @@ const values=[
                <a className="prime-chocobar-button" href="#contact" onClick={e=>nav(e,'#contact')}>Talk to Prime</a>
                
                </div></motion.div></AnimatePresence></div>
-             {/*}  <div className="prime-hero-image justify-between gap-1 "><AnimatePresence mode="wait"><motion.img key={s.image} src={s.image} alt={s.title} initial={{opacity:0,scale:1.08}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:1.02}} transition={{duration:.75}}/></AnimatePresence>*/}
-          <div className="prime-hero-image justify-between gap-1 ">   {/* No working className="prime-hero-image-reveal"  className="prime-hero-image-element"*/} <AnimatePresence mode="wait" initial={false}>
+              
+             
+             <div className="prime-hero-image justify-between gap-1 ">
+               <AnimatePresence mode="wait"><motion.img key={s.image} src={s.image} alt={s.title} initial={{opacity:0,scale:.8}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:1.02}} transition={{duration:.75}}/>
+               </AnimatePresence>
+              
+          {/*<div className="prime-hero-image justify-between gap-1 ">    No working   <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={s.image}
                   className="prime-hero-image-reveal"
@@ -225,7 +251,7 @@ const values=[
                     draggable="false"
                   />
                 </motion.div>
-              </AnimatePresence>
+              </AnimatePresence>*/} 
          
             <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2 ">
             {/*<div className="prime-hero-image-shade"/>*/}
@@ -250,7 +276,8 @@ const values=[
             }}   >{title}</h3><p>{text}</p></div>
         
         </motion.article>)}</section>
-
+            {quotationOpen && (
+               <QuotationGenerator isOpen={quotationOpen} onClose={() => setQuotationOpen(false) } apiEndpoint="/api/quotations" currency="INR" onSaved={(quotation) => { console.log( "Quotation successfully saved:", quotation ); }} />)}
         <section className="prime-value-select-results">
            {/* on Business IT * will show business products actually LAPTOPs */}
            {/* on Security  * will show secureit products actually Net Protector , Security Cameras  */}
@@ -314,9 +341,25 @@ const values=[
                   </div>
              </motion.div>                     
         </section>
+         <section
+          className="prime-networking-section"
+          aria-labelledby="prime-networking-title"
+        >
+          {/*   <div className="relative md:mt020 lgl:mt-32 xl:mt-20 z-20 mb-10">
+            <Products productData={safeProducts}/>
+             </div> */}
+              {/* Trending Products Section */}
+                   <PrimeHomeAllProducts />
+              {/*       <PlaneLandingLogo />*/}
+          </section>                     
+
         <section className="prime-info-section" id="about"><div><div className="prime-section-kicker">ABOUT PRIME COMPUTER</div><h2>Technology should make the business <span>easier, not harder.</span></h2><p>Prime Computer & Network is positioned as a local technology solutions partner for businesses that need dependable computing, infrastructure, support and practical guidance.</p><p>We combine professional service with a local touch, helping customers select, deploy and maintain technology around their actual business requirements.</p><a className="prime-text-link" href="#contact" onClick={e=>nav(e,'#contact')}>Speak with our team <ArrowRight size={16}/></a></div><div className="prime-info-panel"><div className="prime-info-panel-top"><Smartphone size={19}/><span>Technology Solutions</span></div><div className="prime-info-panel-grid"><div><strong>Computing</strong><span>Laptops • desktops • workstations</span></div><div><strong>Infrastructure</strong><span>Networking • storage • deployment</span></div><div><strong>Security</strong><span>Endpoint • backup • hardening</span></div><div><strong>Support</strong><span>Diagnostics • maintenance • assistance</span></div></div></div></section>
 
         <section className="prime-cta-section"><div><div className="prime-section-kicker">PRIME COMPUTER</div><h2>Let's build your next technology setup.</h2><p>Tell us what you are trying to achieve and we'll help you map the practical technology path.</p></div><a className="prime-primary-button" href="#contact" onClick={e=>nav(e,'#contact')}>Contact Sales <ArrowRight size={17}/></a></section>
+        <section className="prime-call-us-section">
+         {/*   <TalkToUsCallUsHelp/> */}
+            <TalkToUsCards/>
+               </section>
               {/* Toast Notification Container */}
           <div className="fixed top-5 right-5 z-50">
             <AnimatePresence>

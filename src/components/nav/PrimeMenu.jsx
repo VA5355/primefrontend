@@ -24,7 +24,8 @@ import { cn } from '../../lib/utils';
 import SearchModal from './SearchModal';
 //import { PrimeCompWithText } from '../logo/PrimeCompLogoGemini';
 // import { PrimeCompWithText } from '../logo/PrimeCompLogoGemini-NoMoble';
- import { PrimeCompWithText } from '../logo/PrimeCompLogoGemini-ChatGPT';
+ //  import { PrimeCompWithText } from '../logo/PrimeCompLogoGemini-ChatGPT';
+import { PrimeCompWithText } from '../logo/PrimeCompLogoGemini-SVG';
 import ThemeToggle from '../ui/ThemeToggle';
 
 export default function Menu() {
@@ -60,7 +61,7 @@ export default function Menu() {
 
   const navLinkClass = ({ isActive }) =>
     cn(
-      "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors rounded-md",
+      "flex  gap-3  w-[100%] px-1 py-2 text-sm font-medium transition-colors rounded-md",
       isActive 
         ? "text-primary bg-blue-50 dark:bg-blue-900/30 dark:text-blue-400" 
         : "text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -80,9 +81,30 @@ export default function Menu() {
             {/* Logo & Desktop Nav */}
             <div className="flex items-center gap-8">
               {/* Responsive Logo Container - Visible on ALL screens */}
-              <div className="flex items-center"> 
+              <div className="flex  items-center"> 
                 <NavLink to="/">
-                  <PrimeCompWithText size={isMobile ? 'xssmall' : 'default'} />
+                 <PrimeCompWithText size={isMobile ? 'xssmall' : 'default'} >
+                 <div className="flex  w-[100%] justify-end   gap-8"> 
+
+                   <NavLink
+                  to="/shop"
+                  className={navLinkClass}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <ShoppingBag className="h-4 w-4" />
+                  Shop
+                </NavLink>
+                <NavLink
+                  to="/categories"
+                  className={navLinkClass}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Grid3x3 className="h-4 w-4" />
+                  <span className="flex items-center "> All  </span><span className="flex  ">  Categories  </span>
+                </NavLink>
+            </div>
+
+                    </PrimeCompWithText>
                 </NavLink> 
               </div>
             </div>

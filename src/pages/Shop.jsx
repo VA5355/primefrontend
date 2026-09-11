@@ -13,12 +13,14 @@ import Radio from '../components/ui/Radio';
 import Button from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import Skeleton from '../components/ui/Skeleton';
-import { cn } from '../lib/utils';
+import { cn ,getEmailImageUrl } from '../lib/utils';
 import { prices } from '../prices';
 import usePageTitle from '../hooks/usePageTitle';
+import useIsMobile from '../hooks/useIsMobile';
 
 export default function Shop() {
   usePageTitle('Shop');
+    const isMobile = useIsMobile();
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -46,7 +48,7 @@ export default function Shop() {
                   //  setPhoto(data.photoPath.toString());
                     console.log('Cloudinary url available ');
               console.log(' Cloudinary url  '+imgPath );   
-              
+                     imgPath = getEmailImageUrl(isMobile, imgPath);
               p.photoPath = imgPath;
                  //   setIsPhotoCloudinary(true)
                     //setIsCreateObject(false)

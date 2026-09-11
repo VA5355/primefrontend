@@ -4,7 +4,8 @@ import { ShoppingCart, Eye, Package, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { useCart } from '../../context/cart';
-import { formatCurrency, calculateStock, isInStock, truncateText } from '../../lib/utils';
+import useIsMobile from '../../hooks/useIsMobile';
+import { formatCurrency, calculateStock, isInStock, truncateText ,getEmailImageUrl} from '../../lib/utils';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import { cn } from '../../lib/utils';
@@ -12,6 +13,7 @@ import { cn } from '../../lib/utils';
 export default function ProductCard({ p: product, viewMode }) {
   const [cart, setCart] = useCart();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [slash , setSlash] = useState('');
@@ -29,7 +31,7 @@ const  getProductPath =  (p) => {
                   //  setPhoto(data.photoPath.toString());
                     console.log('Cloudinary url available ');
               console.log(' Cloudinary url  '+imgPath );   
-              
+              imgPath = getEmailImageUrl(isMobile, imgPath);
               return imgPath;
                  //   setIsPhotoCloudinary(true)
                     //setIsCreateObject(false)

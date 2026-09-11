@@ -53,10 +53,36 @@ export function PrimeCompLogo({
 }
  */
  
+ 
+
+/**
+ * Prime Computer Logo
+ *
+ * Behaviour:
+ *  - Outer gear SVG rotates continuously.
+ *  - Inner PC SVG remains completely stationary.
+ *
+ * NO:
+ *  - useState
+ *  - useEffect
+ *  - Framer Motion
+ *  - PrimeCompLogo.css
+ *
+ * Required files:
+ *
+ * public/
+ * └── images/
+ *     ├── prime-gear.svg
+ *     └── prime-pc.svg
+ */
 
 export default function PrimeCompLogo({
   className = "prime-comp-logo",
   size = 65,
+
+  // SVG files
+  gearSrc = "/images/prime-gear.svg",
+  pcSrc = "/images/prime-pc.svg",
 }) {
   return (
     <svg
@@ -69,17 +95,22 @@ export default function PrimeCompLogo({
       aria-label="Prime Computer"
       preserveAspectRatio="xMidYMid meet"
     >
+
       {/* =========================================================
-          ROTATING OUTER GEAR
+          1. ROTATING GEAR
           ---------------------------------------------------------
-          Gear occupies the complete 65 × 65 canvas.
-          Rotation center = exact SVG center (32.5, 32.5)
+          The gear SVG is fitted into the 65 x 65 logo.
+          animateTransform rotates ONLY this group.
+
+          Rotation centre:
+                X = 32.5
+                Y = 32.5
       ========================================================== */}
 
-      <g id="rotating-gear">
+      <g id="prime-rotating-gear">
 
         <image
-          href="/images/gear-trans-ps-small.png"
+          href={gearSrc}
           x="0"
           y="0"
           width="65"
@@ -101,24 +132,39 @@ export default function PrimeCompLogo({
 
 
       {/* =========================================================
-          STATIC PC EMBLEM
+          2. STATIC PC EMBLEM
           ---------------------------------------------------------
-          The PC is placed in the CENTER of the gear.
-          Nothing rotates here.
+          IMPORTANT:
+          The PC SVG itself has a 512 x 512 canvas, but the actual
+          embedded artwork occupies approximately:
+
+                x = 142 ... 372
+                y = 152 ... 352
+
+          We therefore use a nested SVG viewport to crop the empty
+          area and place the actual PC artwork inside the gear.
       ========================================================== */}
 
-      <g id="static-pc-logo">
+      <svg
+        x="13"
+        y="13"
+        width="39"
+        height="39"
+        viewBox="142 152 230 200"
+        preserveAspectRatio="xMidYMid meet"
+        overflow="visible"
+      >
 
         <image
-          href="/images/pc-logo-ps-small.png"
-          x="13"
-          y="13"
-          width="39"
-          height="39"
-          preserveAspectRatio="xMidYMid meet"
+          href={pcSrc}
+          x="0"
+          y="0"
+          width="512"
+          height="512"
+          preserveAspectRatio="none"
         />
 
-      </g>
+      </svg>
 
     </svg>
   );
@@ -166,14 +212,15 @@ export function PrimeCompWithText({
             
             {/* RESPONSIVE BRAND IMAGE TEXT */}
             <picture className="prime-brand-title-img">
-              {/* Mobile View: Stacked Text Logos /images/pc-text-1.png,/images/pc-text-2.png*/}
+              {/* Mobile View: Stacked Text Logos /images/pc-text-1.png,/images/pc-text-2.png*/} 
+               {/*} srcSet="/images/prime-computer-logo.png"*/}
               <source
                 media="(max-width: 767px)"
-                srcSet="/images/prime-computer-logo.png"
+             srcSet="/images/prime-computer-logo-trans-new-small.png"
               />
               {/* Desktop View: Horizontal Full Text Logo */}
               <img
-                src="/images/prime-computer-logo.png"
+                src="/images/prime-computer-logo-trans-new-small.png"
                 alt="PRIME COMPUTER"
                 className="brand-text-image"
               />
