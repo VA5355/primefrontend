@@ -32,3 +32,29 @@ export function truncateText(text, maxLength = 60) {
   if (!text) return '';
   return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 }
+
+export function  getEmailImageUrl(isMobile,
+  originalUrl  , //: string  | null | undefined,
+  width = 300,
+  quality = 75
+) {                    // : string
+  if (!originalUrl) {
+    return "";
+  }
+   let responseUrl  =   isMobile ? originalUrl.replace(
+    "/image/upload/",
+    `/image/upload/c_limit,w_${width},q_${quality},f_jpg/`
+  ) : originalUrl;
+  if(isMobile){
+     console.log(" responsive url being used from cloudinary "); 
+     console.log(" responsive url   "+responseUrl); 
+
+  }
+  else {
+     console.log(" normal url being used from cloudinary "); 
+     console.log("   url   "+responseUrl); 
+  }
+
+
+  return responseUrl
+}
