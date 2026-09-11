@@ -1,0 +1,179 @@
+.pageWrapper {
+  display: flex;
+  flex-direction: column;
+  /*min-height: 100vh;*/
+}
+
+.mainWrapper {
+  flex: 1;
+}
+
+.pageContentWrapper {
+  width: 100%;
+}
+
+.section {
+ /* padding: 5rem 0;*/
+  padding: 3rem 0;
+}
+
+.paddingGlobal {
+ /* padding-left: 2.5rem;
+  padding-right: 2.5rem;*/
+  padding-left: 2.0rem;
+  padding-right: 2.0rem;
+}
+
+.wContainer {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.contactCardsInner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /*gap: 2rem;*/
+  gap: 0.8rem;
+}
+
+@media screen and (max-width: 991px) {
+  .contactCardsInner {
+    grid-template-columns: 1fr;
+  }
+}
+
+.contactCardItem {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  /*min-height: 280px;*/
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  /*padding: 2.5rem;*/
+  padding: 1.05rem;
+}
+
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.zIndex1 {
+  z-index: 1;
+}
+
+.zIndex2 {
+  z-index: 2;
+}
+
+.backgroundColorAgreen {
+/*  background-color: #1b4d3e; */
+  background-color: #a1e55c
+}
+
+.backgroundColorPrimary {
+  /*background-color: #2b7a67;*/
+  background-color: #52bf30
+}
+
+.backgroundColorDgreen {
+  /*background-color: #0d231c;*/
+  background-color: #288c28
+}
+
+.imgContain {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  max-width: 50%;
+  height: auto;
+  object-fit: contain;
+}
+
+.contactCardContent {
+  display: flex;
+  flex-direction: column;
+  /*gap: 1.5rem;*/
+  gap: 1.02rem;
+}
+
+.contactCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.textColorDarkestGreen {
+  color: #0b1f18;
+}
+
+.textColorAlternate {
+  color: #ffffff;
+}
+
+.iconHeightMedium {
+  height: 24px;
+  width: auto;
+}
+
+.headingStyleH3 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.buttonWrapper {
+  display: flex;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem; 
+  /*padding: 0.55rem 0.09rem;*/
+  border-radius: 9999px;
+  text-decoration: none;
+  background-color: #ffffff;
+  color: #000000;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.button:hover {
+  background-color: #f0f0f0;
+}
+
+.isReversed {
+  background-color: #ffffff;
+}
+
+.isMedium {
+  font-size: 1rem;
+}
+
+.isIconLeft {
+  flex-direction: row;
+}
+
+.wInlineBlock {
+  display: inline-block;
+}
+
+.icon1x1Medium {
+  width: 20px;
+  height: 20px;
+}
+
+.textWeightBold {
+  font-weight: 700;
+}

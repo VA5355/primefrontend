@@ -83,7 +83,7 @@ export default function Footer() {
 
                 {/* Subtitle / Tagline Strip with High-Contrast 2017 */}
                 <div className="mt-4 pt-3 border-t border-amber-900/15 flex items-center justify-between text-[11px] font-black tracking-wider uppercase">
-                  <span className="text-amber-950/80">PRIME METRO DELIVERY</span>
+                  <span className="text-amber-950/80">PRIME DELIVERY</span>
                   <span className="text-orange-600 font-extrabold bg-orange-100/80 px-2 py-0.5 rounded-md border border-orange-300/50">
                     SINCE 2017
                   </span>
