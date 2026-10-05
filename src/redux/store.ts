@@ -11,6 +11,7 @@ import loadingReducer from './slices/loadingSlice';
  
 import paymentReducer  from './slices/paymentSlice';
 import paymentBhartPeReducer  from './slices/paymentBharatPeSlice';
+import nextReducer from './slices/nextSlice'; // <-- Import your next slice/reducer here
 
 export interface GlobalState {
  
@@ -34,7 +35,7 @@ export const store = configureStore({
        
          razorpay:paymentReducer,
         bharatpe:paymentBhartPeReducer
-
+           next: nextReducer, // <-- ADDED HERE so state.next is defined
 	},
         middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(modalMiddleware),
 });

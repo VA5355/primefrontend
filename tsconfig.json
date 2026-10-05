@@ -19,12 +19,13 @@
     /* Fix 3: Enable `@/` alias resolution */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+       "@/public/*": ["./public/*"] 
     },
     
     /* Other recommended flags for JS/TS mix */
     "allowJs": true,
-    "noEmit": false
+    "noEmit": true
   },
   "include": [
   "src/redux/hooks/**/*.ts",

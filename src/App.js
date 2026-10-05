@@ -5,7 +5,8 @@ import { Toaster } from 'react-hot-toast';
 import { GlobalSchema } from './components/GlobalSchema.jsx'; 
 
 //import Menu from './components/nav/Menu.jsx'; 
-import Menu from './components/nav/PrimeMenu.jsx';
+//import Menu from './components/nav/PrimeMenu.jsx';
+import Menu from './components/nav/PrimeMenuAmazon.jsx';
 import CartDrawer from './components/cart/CartDrawer.jsx';
 import Footer from './components/layout/Footer.jsx';
 import { useCartDrawer } from './context/cartDrawer';
@@ -14,6 +15,7 @@ import { ModalProvider } from './providers/ModalProvider';
 import NotFound from './pages/NotFound';
 import Home from './pages/Home'; 
 import PrimeComputerHome from './pages/PrimeComputerHome'; 
+import PrimeComputerAmazonHome from './pages/PrimeComputerAmazonHome'; 
 import Shop from './pages/Shop';
 import ProductView from './pages/ProductView';
 import Search from './pages/Search';
@@ -67,13 +69,13 @@ function AppContent() {
           {/* 2. INJECT GLOBAL SCHEMA HERE */}
       <GlobalSchema />
          {/** now points to <PrimeMenu/> */}
-      <Menu />
+      <ReduxProvider>  <ModalProvider>  <Menu /> </ModalProvider>  </ReduxProvider>
       <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
       <Toaster position='top-right' />
       <Routes>
         <Route>
           <Route path='/home' element={ <Home /> } />
-          <Route path='/' element={ <PrimeComputerHome /> } />
+          <Route path='/' element={   <PrimeComputerAmazonHome />  } />
           <Route path='/shop' element={ <Shop /> } />
           <Route path='/categories' element={ <CategoriesList /> } />
           <Route path='/category/:slug' element={ <CategoryView /> } />

@@ -71,7 +71,7 @@ export default function Footer() {
                       <div className="flex flex-col">
                        {/* <span className="text-xl md:text-2xl font-black text-amber-950 tracking-tight whitespace-nowrap">*/} 
                         <span className={`${currentSize ? currentSize.text : ''} ${ (isMobile ? '  text-sm' :   '  text-2xl') } font-bold bg-gradient-to-r from-amber-950 via-orange-600 to-amber-500 dark:from-orange-500 dark:via-amber-400 dark:to-yellow-300  bg-clip-text text-transparent transition-all group-hover:scale-105`}>
-                          Prime Computer & Network
+                          Prime Computer & Networking
                         </span>
                         <span className="text-xs font-semibold text-slate-500 -mt-0.5">
                           Your Shopping Paradise
