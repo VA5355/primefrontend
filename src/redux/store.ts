@@ -34,7 +34,7 @@ export const store = configureStore({
          loader: loadingReducer,
        
          razorpay:paymentReducer,
-        bharatpe:paymentBhartPeReducer
+        bharatpe:paymentBhartPeReducer,
            next: nextReducer, // <-- ADDED HERE so state.next is defined
 	},
         middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(modalMiddleware),
