@@ -56,7 +56,7 @@ export default function ProductView() {
                 if(product.photos != null && Array.isArray(product.photos) && product.photos.length > 0 ){   
                      imgPath =  product.photos[0];
                    setPhotos(product.photos);
-                    setIsPhotoCloudinary(true)
+                    setIsPhotoCloudinary(true);
                     console.log(' photos  array contains first image '+ imgPath );
                     setProductPic(imgPath);
                 }
@@ -114,6 +114,7 @@ export default function ProductView() {
                    setPhotos(data.photos);
                     setIsPhotoCloudinary(true)
                     console.log(' photos  array contains first image '+ imgPath );
+                       setProductPic(imgPath);
                        return imgPath; 
                 }
                 else { 
