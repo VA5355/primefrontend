@@ -28,6 +28,7 @@ import usePageTitle from '../hooks/usePageTitle';
 export default function ProductView() {
   const [product, setProduct] = useState({});
   const [photos, setPhotos] = useState([]);
+  const [productPic , setProductPic]= useState('');
    const [isPhotoCloudinary , setIsPhotoCloudinary ] = useState(false);
    const [slash , setSlash] = useState('');
   usePageTitle(product.name || 'Product');
@@ -51,9 +52,18 @@ export default function ProductView() {
              let isForwardSlash = photoFirstChar==='/' ? true : false;
           console.log(' photoPath contains forwardslash '+isForwardSlash );
           if(isForwardSlash)
-          {
-             console.log(' photoPath no forwardslash  required '+isForwardSlash );
-                setSlash('');
+          {       // check if photos array is filled 
+                if(product.photos != null && Array.isArray(product.photos) && product.photos.length > 0 ){   
+                     imgPath =  product.photos[0];
+                   setPhotos(product.photos);
+                    setIsPhotoCloudinary(true)
+                    console.log(' photos  array contains first image '+ imgPath );
+                    setProductPic(imgPath);
+                }
+                else { 
+                  console.log(' photoPath no forwardslash  required '+isForwardSlash );
+                    setSlash('');
+                }
           }else {
               console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
               setSlash('/');
@@ -98,8 +108,19 @@ export default function ProductView() {
             console.log(' photoPath contains forwardslash '+isForwardSlash );
             if(isForwardSlash)
             {
-              console.log(' photoPath no forwardslash  required '+isForwardSlash );
+              // check if photos array is filled 
+                if(data.photos != null && Array.isArray(data.photos) && data.photos.length > 0 ){   
+                     imgPath =  data.photos[0];
+                   setPhotos(data.photos);
+                    setIsPhotoCloudinary(true)
+                    console.log(' photos  array contains first image '+ imgPath );
+                       return imgPath; 
+                }
+                else { 
+                   console.log(' photoPath no forwardslash  required '+isForwardSlash );
                   setSlash('');
+                }
+                
             }else {
                 console.log(' photoPath  forwardslash  required '+(!isForwardSlash) );
                 setSlash('/');
@@ -250,14 +271,24 @@ export default function ProductView() {
                   Only {stock} left
                 </Badge>
               )}
-              <img
-                src={product.photoPath && isPhotoCloudinary ?  product.photoPath : (product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}` : '/placeholder.png')}
+               {productPic !== '' ?  (
+                <img
+                src={productPic && isPhotoCloudinary ? productPic : '/placeholder.png'}
                 alt={product.name}
                 className={cn(
                   "w-full h-[500px] object-cover transition-transform duration-300",
                   isZoomed ? "scale-150" : "group-hover:scale-105"
                 )}
               />
+              ): ( <img
+                src={product.photoPath && isPhotoCloudinary ?  product.photoPath : (product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}` : '/placeholder.png')}
+                alt={product.name}
+                className={cn(
+                  "w-full h-[500px] object-cover transition-transform duration-300",
+                  isZoomed ? "scale-150" : "group-hover:scale-105"
+                )}
+              />)}
+             
               {!inStock && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                   <span className="text-white text-2xl font-bold">Out of Stock</span>
