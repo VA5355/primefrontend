@@ -59,6 +59,32 @@ export default function UserOrders() {
 
      console.log("Total Orders for User "+ JSON.stringify(data))
       setOrders(data || []);
+
+      for (var k = 0 ; k < orders.length  ; k++ ){
+          var ordersOne = orders[0];
+             const customerName =
+            ordersOne.source === 'FLUTTER'
+                ? ordersOne.customerSnapshot?.name
+                : ordersOne.buyer?.name;
+
+        const customerEmail =
+            ordersOne.source === 'FLUTTER'
+                ? ordersOne.customerSnapshot?.email
+                : ordersOne.buyer?.email;
+
+        const customerMobile =
+            ordersOne.source === 'FLUTTER'
+                ? ordersOne.customerSnapshot?.mobile
+                : ordersOne.buyer?.mobile;
+
+      console.log(`Mobie based orders  customer: ${customerName}  email: ${customerEmail}  , mobile:  ${customerMobile}`);
+      }
+   
+
+
+ 
+
+
     } catch (err) {
       console.log(err);
     } finally {

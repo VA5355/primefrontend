@@ -27,6 +27,7 @@ import usePageTitle from '../hooks/usePageTitle';
 
 export default function ProductView() {
   const [product, setProduct] = useState({});
+  const [photos, setPhotos] = useState([]);
    const [isPhotoCloudinary , setIsPhotoCloudinary ] = useState(false);
    const [slash , setSlash] = useState('');
   usePageTitle(product.name || 'Product');
@@ -79,7 +80,9 @@ export default function ProductView() {
          if(imgPath.toLowerCase().startsWith("https://res.cloudinary.com")){
             //setPhoto(data.photoPath.toString());
             setIsPhotoCloudinary(true)
-
+            if(data.photos != null && Array.isArray(data.photos) && data.photos.length > 0 ){   
+              setPhotos(data.photos);
+            }
             console.log('Cloudinary url available ')
             //setIsCreateObject(false)
         }
@@ -266,9 +269,10 @@ export default function ProductView() {
             </div>
           </motion.div>
 
-          {/* Thumbnail Images (placeholder for multiple images) */}
+          {/* Thumbnail Images (placeholder for multiple images)       {[...Array(4)].map((_, i) => ( */}
           <div className="grid grid-cols-4 gap-2">
-            {[...Array(4)].map((_, i) => (
+       
+            {[...photos].map((pic, i) => (
               <button
                 key={i}
                 onClick={() => setSelectedImage(i)}
@@ -279,8 +283,10 @@ export default function ProductView() {
                     : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                 )}
               >
+                {/*   src={product.photoPath && isPhotoCloudinary ?  product.photoPath : (product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}` : '/placeholder.png')} */}
                 <img
-                  src={product.photoPath && isPhotoCloudinary ?  product.photoPath : (product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}` : '/placeholder.png')}
+                
+                  src={pic ?  pic : (product.photoPath ? `${process.env.REACT_APP_API_PHOTOS}${slash}${product.photoPath}` : '/placeholder.png')}
                   alt={`${product.name} ${i + 1}`}
                   className="w-full h-20 object-cover opacity-70"
                 />
